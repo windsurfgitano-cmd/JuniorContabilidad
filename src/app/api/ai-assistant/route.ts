@@ -21,13 +21,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Configuración de Azure OpenAI usando variables de entorno
-const AZURE_OPENAI_ENDPOINT = `${process.env.AZURE_OPENAI_ENDPOINT}/openai/deployments/${process.env.AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version=${process.env.AZURE_OPENAI_API_VERSION}`;
-const AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY;
-
-// Validar variables de entorno requeridas
-if (!process.env.AZURE_OPENAI_ENDPOINT || !process.env.AZURE_OPENAI_DEPLOYMENT_NAME || !process.env.AZURE_OPENAI_API_VERSION || !AZURE_OPENAI_API_KEY) {
-  throw new Error('Variables de entorno de Azure OpenAI no configuradas correctamente');
-}
+// La validación se hace dentro de la función POST para evitar errores en build time
 
 // Master prompt para el mejor contador chileno del mundo
 const MASTER_PROMPT = `Eres "ContadorIA", el asistente de inteligencia artificial más experto en contabilidad y tributación chilena que existe. Tu conocimiento del SII (Servicio de Impuestos Internos) es absolutamente enciclopédico y siempre actualizado.
@@ -71,6 +65,18 @@ Siempre mantén la máxima precisión técnica y actualízate constantemente con
 
 export async function POST(request: NextRequest) {
   try {
+    // Validar variables de entorno requeridas
+    if (!process.env.AZURE_OPENAI_ENDPOINT || !process.env.AZURE_OPENAI_DEPLOYMENT_NAME || !process.env.AZURE_OPENAI_API_VERSION || !process.env.AZURE_OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: 'Variables de entorno de Azure OpenAI no configuradas correctamente' },
+        { status: 500 }
+      );
+    }
+
+    // Configurar endpoint de Azure OpenAI
+    const AZURE_OPENAI_ENDPOINT = `${process.env.AZURE_OPENAI_ENDPOINT}/openai/deployments/${process.env.AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version=${process.env.AZURE_OPENAI_API_VERSION}`;
+    const AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY;
+
     const { message, context } = await request.json();
 
     // Obtener contexto de la base de datos si es necesario
