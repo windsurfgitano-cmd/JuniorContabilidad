@@ -11,11 +11,24 @@ export default async function TareasPage({ searchParams }: { searchParams?: { es
   const estadoFiltro = (searchParams?.estado ?? "TODAS").toUpperCase();
   const where: Prisma.TareaWhereInput = estadoFiltro === "TODAS" ? {} : { estado: estadoFiltro as EstadoTarea };
 
-  const tareas = await prisma.tarea.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: { cliente: true, obligacion: true, auditoria: true, recordatorios: true },
-  });
+  const [tareas, clientes] = await Promise.all([
+    prisma.tarea.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        cliente: {
+          select: { id: true, nombre: true, ruc: true }
+        },
+        obligacion: true,
+        auditoria: true,
+        recordatorios: true
+      },
+    }),
+    prisma.cliente.findMany({
+      orderBy: { nombre: "asc" },
+      select: { id: true, nombre: true, ruc: true },
+    }),
+  ]);
 
   const formatDateInput = (d?: Date | null) => (d ? new Date(d).toISOString().split("T")[0] : "");
 
@@ -33,6 +46,14 @@ export default async function TareasPage({ searchParams }: { searchParams?: { es
             <option value="MEDIA">Media</option>
             <option value="ALTA">Alta</option>
             <option value="CRITICA">Crítica</option>
+          </select>
+          <select name="clienteId" className="rounded border border-zinc-300 bg-white text-black px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white">
+            <option value="">Seleccionar cliente</option>
+            {clientes.map((cliente) => (
+              <option key={cliente.id} value={cliente.id}>
+                {cliente.nombre} {cliente.ruc ? `(${cliente.ruc})` : ''}
+              </option>
+            ))}
           </select>
           <input name="fechaVencimiento" type="date" className="rounded border bg-transparent px-3 py-2" />
           <input name="descripcion" placeholder="Descripción" className="rounded border bg-transparent px-3 py-2 sm:col-span-3" />
@@ -71,6 +92,13 @@ export default async function TareasPage({ searchParams }: { searchParams?: { es
                   <p className="font-medium">{t.titulo}</p>
                   <span className="text-xs text-muted-foreground">{t.estado} · {t.prioridad}</span>
                 </div>
+                {t.cliente ? (
+                  <p className="text-sm text-blue-600 dark:text-blue-400">
+                    👤 {t.cliente.nombre} {t.cliente.ruc ? `(${t.cliente.ruc})` : ''}
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-700 italic">Sin cliente asignado</p>
+                )}
                 {t.descripcion ? (
                   <p className="text-sm text-muted-foreground">{t.descripcion}</p>
                 ) : null}
@@ -168,10 +196,20 @@ export async function crearTarea(formData: FormData) {
   const prioridad = (String(formData.get("prioridad") || "MEDIA").toUpperCase()) as Prioridad;
   const fechaVencimientoRaw = String(formData.get("fechaVencimiento") || "");
   const fechaVencimiento = fechaVencimientoRaw ? new Date(fechaVencimientoRaw) : null;
+  const clienteIdRaw = String(formData.get("clienteId") || "").trim();
+  const clienteId = clienteIdRaw || null;
 
   if (!titulo) return;
 
-  await prisma.tarea.create({ data: { titulo, descripcion, prioridad, fechaVencimiento } });
+  await prisma.tarea.create({ 
+    data: { 
+      titulo, 
+      descripcion, 
+      prioridad, 
+      fechaVencimiento,
+      clienteId 
+    } 
+  });
   revalidatePath("/tareas");
 }
 

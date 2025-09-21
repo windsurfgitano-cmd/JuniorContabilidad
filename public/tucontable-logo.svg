@@ -1,0 +1,56 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E40AF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E5E7EB;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo con bordes redondeados -->
+  <rect x="10" y="10" width="180" height="180" rx="36" ry="36" fill="url(#bgGradient)" stroke="#1E40AF" stroke-width="2"/>
+  
+  <!-- Icono de calculadora/contabilidad -->
+  <g transform="translate(50, 40)">
+    <!-- Pantalla de calculadora -->
+    <rect x="10" y="10" width="80" height="25" rx="8" ry="8" fill="url(#iconGradient)" stroke="#1E40AF" stroke-width="1"/>
+    <text x="50" y="27" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1E40AF">$123.45</text>
+    
+    <!-- Botones de calculadora -->
+    <g fill="url(#iconGradient)" stroke="#1E40AF" stroke-width="1">
+      <!-- Fila 1 -->
+      <rect x="10" y="45" width="15" height="12" rx="3" ry="3"/>
+      <rect x="30" y="45" width="15" height="12" rx="3" ry="3"/>
+      <rect x="50" y="45" width="15" height="12" rx="3" ry="3"/>
+      <rect x="70" y="45" width="20" height="12" rx="3" ry="3"/>
+      
+      <!-- Fila 2 -->
+      <rect x="10" y="62" width="15" height="12" rx="3" ry="3"/>
+      <rect x="30" y="62" width="15" height="12" rx="3" ry="3"/>
+      <rect x="50" y="62" width="15" height="12" rx="3" ry="3"/>
+      <rect x="70" y="62" width="20" height="12" rx="3" ry="3"/>
+      
+      <!-- Fila 3 -->
+      <rect x="10" y="79" width="15" height="12" rx="3" ry="3"/>
+      <rect x="30" y="79" width="15" height="12" rx="3" ry="3"/>
+      <rect x="50" y="79" width="15" height="12" rx="3" ry="3"/>
+      <rect x="70" y="79" width="20" height="25" rx="3" ry="3"/>
+      
+      <!-- Fila 4 -->
+      <rect x="10" y="96" width="30" height="12" rx="3" ry="3"/>
+      <rect x="50" y="96" width="15" height="12" rx="3" ry="3"/>
+    </g>
+  </g>
+  
+  <!-- Texto TuContable -->
+  <text x="100" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">Tu</text>
+  <text x="100" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">Contable</text>
+  
+  <!-- Elementos decorativos -->
+  <circle cx="160" cy="60" r="8" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="40" cy="170" r="6" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="170" cy="150" r="4" fill="rgba(255,255,255,0.4)"/>
+</svg>

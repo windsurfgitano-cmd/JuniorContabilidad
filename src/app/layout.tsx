@@ -4,6 +4,8 @@ import "./globals.css";
 import "@/app/globals.css";
 import { ReactNode } from "react";
 import NavButtons from "@/components/NavButtons";
+import GlobalAISidebar from "@/components/GlobalAISidebar";
+import { PageProvider } from "@/contexts/PageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,14 +57,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <div className="p-6">
-          <NavButtons />
-          {children}
-          <footer className="mt-8 border-t pt-4 text-xs opacity-80">
-            <p>Cuando yo hola yo chao asistentes contables.</p>
-            <p>siii a todoo</p>
-          </footer>
-        </div>
+        <PageProvider>
+          <div className="p-6">
+            <NavButtons />
+            {children}
+            <footer className="mt-8 border-t pt-4 text-xs opacity-80">
+              <p>Cuando yo hola yo chao asistentes contables.</p>
+              <p>siii a todoo</p>
+            </footer>
+          </div>
+          <GlobalAISidebar />
+        </PageProvider>
       </body>
     </html>
   );

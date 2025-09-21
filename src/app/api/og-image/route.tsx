@@ -25,20 +25,27 @@ export async function GET() {
             justifyContent: 'center',
             width: '120px',
             height: '120px',
-            backgroundColor: '#10b981',
-            borderRadius: '24px',
+            background: 'linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%)',
+            borderRadius: '32px',
             marginBottom: '32px',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }}
         >
           <div
             style={{
-              fontSize: '48px',
-              color: 'white',
-              fontWeight: 'bold',
+              width: '120px',
+              height: '120px',
+              marginBottom: '20px',
+              borderRadius: '24px',
+              border: '4px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(255, 255, 255, 0.1)',
             }}
           >
-            📊
+            <div style={{ fontSize: '60px' }}>🧮</div>
           </div>
         </div>
 
@@ -67,7 +74,7 @@ export async function GET() {
             lineHeight: '1.2',
           }}
         >
-          Sistema de Gestión Contable Profesional
+          Gestión contable simplificada
         </div>
 
         {/* Features */}
