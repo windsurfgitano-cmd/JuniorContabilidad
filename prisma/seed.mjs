@@ -40,12 +40,41 @@ try {
     ],
   });
 
-  // Datos mínimos para otras vistas (sin recordatorios)
-  await prisma.obligacionFiscal.create({
-    data: { tipo: "IVA", periodo: "2025-08", fechaLimite: addDays(hoy, 2), estado: "EN_PROCESO", clienteId: cliente.id },
+  // Obligaciones fiscales de ejemplo
+  await prisma.obligacionFiscal.createMany({
+    data: [
+      { tipo: "IVA", periodo: "2025-08", fechaLimite: addDays(hoy, 2), estado: "EN_PROCESO", clienteId: cliente.id },
+      { tipo: "Retenciones", periodo: "2025-08", fechaLimite: addDays(hoy, 5), estado: "PENDIENTE", clienteId: cliente.id },
+      { tipo: "Impuesto a la Renta", periodo: "2025-07", fechaLimite: addDays(hoy, -3), estado: "COMPLETADO", clienteId: cliente.id },
+      { tipo: "ATS", periodo: "2025-08", fechaLimite: addDays(hoy, 1), estado: "BLOQUEADO", clienteId: cliente.id },
+    ],
   });
-  await prisma.auditoria.create({
-    data: { titulo: "Auditoría interna Q3", alcance: "Procesos contables", estado: "EN_PROCESO", clienteId: cliente.id, fechaInicio: addDays(hoy, -10), fechaFin: addDays(hoy, 20) },
+
+  // Auditorías de ejemplo
+  await prisma.auditoria.createMany({
+    data: [
+      { titulo: "Auditoría interna Q3", alcance: "Procesos contables", estado: "EN_PROCESO", clienteId: cliente.id, fechaInicio: addDays(hoy, -10), fechaFin: addDays(hoy, 20) },
+      { titulo: "Revisión fiscal anual", alcance: "Estados financieros", estado: "PENDIENTE", clienteId: cliente.id, fechaInicio: addDays(hoy, 15), fechaFin: addDays(hoy, 45) },
+      { titulo: "Auditoría de inventarios", alcance: "Control de stock", estado: "COMPLETADO", clienteId: cliente.id, fechaInicio: addDays(hoy, -30), fechaFin: addDays(hoy, -5) },
+    ],
+  });
+
+  // Cliente adicional para mostrar más variedad
+  const cliente2 = await prisma.cliente.create({
+    data: {
+      nombre: "Comercial Beta Ltda.",
+      ruc: "1788888888001",
+      email: "admin@beta.com",
+      usuario: { create: { nombre: "Contador", email: `contador-${Date.now()}@demo.local` } },
+    },
+  });
+
+  // Tareas para el segundo cliente
+  await prisma.tarea.createMany({
+    data: [
+      { titulo: "Preparar declaración mensual", prioridad: "ALTA", estado: "PENDIENTE", clienteId: cliente2.id, fechaVencimiento: addDays(hoy, 7) },
+      { titulo: "Revisar gastos deducibles", prioridad: "MEDIA", estado: "EN_PROCESO", clienteId: cliente2.id, fechaVencimiento: addDays(hoy, 10) },
+    ],
   });
 
   console.log("Seed completado con éxito ✔");
