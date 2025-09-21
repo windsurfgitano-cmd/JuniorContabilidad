@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 export default async function AuditoriasPage({ searchParams }: { searchParams?: { estado?: string } }) {
   const estadoVista = (searchParams?.estado ?? "TODAS").toUpperCase();
-  const where: Prisma.AuditoriaWhereInput = estadoVista === "TODAS" ? {} : { estado: estadoVista };
+  const where: Prisma.AuditoriaWhereInput = estadoVista === "TODAS" ? {} : { estado: estadoVista as EstadoTarea };
   const auditorias = await prisma.auditoria.findMany({
     where,
     orderBy: { createdAt: "desc" },
