@@ -3,11 +3,13 @@ export const dynamic = "force-dynamic";
 import { PrismaClient } from "@/generated/prisma";
 import { revalidatePath } from "next/cache";
 
+import { Prioridad, EstadoTarea, CanalRecordatorio, Prisma } from "@/generated/prisma";
+
 const prisma = new PrismaClient();
 
 export default async function TareasPage({ searchParams }: { searchParams?: { estado?: string } }) {
   const estadoFiltro = (searchParams?.estado ?? "TODAS").toUpperCase();
-  const where: any = estadoFiltro === "TODAS" ? {} : { estado: estadoFiltro };
+  const where: Prisma.TareaWhereInput = estadoFiltro === "TODAS" ? {} : { estado: estadoFiltro };
 
   const tareas = await prisma.tarea.findMany({
     where,
@@ -163,7 +165,7 @@ export async function crearTarea(formData: FormData) {
 
   const titulo = String(formData.get("titulo") || "").trim();
   const descripcion = String(formData.get("descripcion") || "").trim() || null;
-  const prioridad = (String(formData.get("prioridad") || "MEDIA").toUpperCase()) as any;
+  const prioridad = (String(formData.get("prioridad") || "MEDIA").toUpperCase()) as Prioridad;
   const fechaVencimientoRaw = String(formData.get("fechaVencimiento") || "");
   const fechaVencimiento = fechaVencimientoRaw ? new Date(fechaVencimientoRaw) : null;
 
@@ -180,8 +182,8 @@ export async function actualizarTarea(formData: FormData) {
 
   const titulo = String(formData.get("titulo") || "").trim();
   const descripcion = String(formData.get("descripcion") || "").trim() || null;
-  const prioridad = (String(formData.get("prioridad") || "MEDIA").toUpperCase()) as any;
-  const estado = (String(formData.get("estado") || "PENDIENTE").toUpperCase()) as any;
+  const prioridad = (String(formData.get("prioridad") || "MEDIA").toUpperCase()) as Prioridad;
+  const estado = (String(formData.get("estado") || "PENDIENTE").toUpperCase()) as EstadoTarea;
   const fechaVencimientoRaw = String(formData.get("fechaVencimiento") || "");
   const fechaVencimiento = fechaVencimientoRaw ? new Date(fechaVencimientoRaw) : null;
 
@@ -215,7 +217,7 @@ export async function actualizarEstadoTarea(formData: FormData) {
   const estado = String(formData.get("estado") || "").toUpperCase();
   if (!id || !estado) return;
 
-  await prisma.tarea.update({ where: { id }, data: { estado: estado as any } });
+  await prisma.tarea.update({ where: { id }, data: { estado: estado as EstadoTarea } });
   revalidatePath("/tareas");
 }
 
@@ -224,7 +226,7 @@ export async function crearRecordatorio(formData: FormData) {
   const tareaId = String(formData.get("tareaId") || "").trim();
   const fechaRaw = String(formData.get("fecha") || "");
   const mensaje = String(formData.get("mensaje") || "").trim();
-  const canal = (String(formData.get("canal") || "SISTEMA").toUpperCase()) as any;
+  const canal = (String(formData.get("canal") || "SISTEMA").toUpperCase()) as CanalRecordatorio;
   if (!tareaId || !fechaRaw || !mensaje) return;
   const fecha = new Date(fechaRaw);
   await prisma.recordatorio.create({ data: { tareaId, fecha, mensaje, canal } });

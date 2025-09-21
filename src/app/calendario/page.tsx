@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { PrismaClient } from "@/generated/prisma";
 import { format } from "date-fns";
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 
 const prisma = new PrismaClient();
 

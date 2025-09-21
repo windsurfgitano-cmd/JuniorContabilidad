@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { PrismaClient } from "@/generated/prisma";
 import { revalidatePath } from "next/cache";
 
+import { EstadoTarea, Prisma } from "@/generated/prisma";
+
 const prisma = new PrismaClient();
 
 export default async function ObligacionesPage({ searchParams }: { searchParams?: { vista?: string; estado?: string } }) {
@@ -197,7 +199,7 @@ export async function eliminarObligacion(formData: FormData) {
 export async function actualizarEstadoObligacion(formData: FormData) {
   "use server";
   const id = String(formData.get("id") || "").trim();
-  const estado = String(formData.get("estado") || "").trim().toUpperCase() as any;
+  const estado = String(formData.get("estado") || "").trim().toUpperCase() as EstadoTarea;
   if (!id || !estado) return;
   await prisma.obligacionFiscal.update({ where: { id }, data: { estado } });
   revalidatePath("/obligaciones");

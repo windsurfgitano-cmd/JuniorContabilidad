@@ -11,9 +11,6 @@
     "db:seed": "npm run seed",
     "postinstall": "prisma generate"
   },
-  "prisma": {
-    "seed": "node ./prisma/seed.mjs"
-  },
   "dependencies": {
     "@prisma/client": "^6.16.2",
     "@radix-ui/react-dialog": "^1.1.15",

@@ -3,11 +3,13 @@ export const dynamic = "force-dynamic";
 import { PrismaClient } from "@/generated/prisma";
 import { revalidatePath } from "next/cache";
 
+import { EstadoTarea, Prisma } from "@/generated/prisma";
+
 const prisma = new PrismaClient();
 
 export default async function AuditoriasPage({ searchParams }: { searchParams?: { estado?: string } }) {
   const estadoVista = (searchParams?.estado ?? "TODAS").toUpperCase();
-  const where: any = estadoVista === "TODAS" ? {} : { estado: estadoVista };
+  const where: Prisma.AuditoriaWhereInput = estadoVista === "TODAS" ? {} : { estado: estadoVista };
   const auditorias = await prisma.auditoria.findMany({
     where,
     orderBy: { createdAt: "desc" },
@@ -178,7 +180,7 @@ export async function eliminarAuditoria(formData: FormData) {
 export async function actualizarEstadoAuditoriaSoloEstado(formData: FormData) {
   "use server";
   const id = String(formData.get("id") || "").trim();
-  const estado = String(formData.get("estado") || "").trim().toUpperCase() as any;
+  const estado = String(formData.get("estado") || "").trim().toUpperCase() as EstadoTarea;
   if (!id || !estado) return;
   await prisma.auditoria.update({ where: { id }, data: { estado } });
   revalidatePath("/auditorias");
