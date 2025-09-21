@@ -172,6 +172,11 @@ export default function AIAssistant() {
   };
 
   const formatMessage = (content: string) => {
+    // Validar que content no sea undefined o null
+    if (!content || typeof content !== 'string') {
+      return '';
+    }
+    
     // Remover comandos especiales de la visualización
     const cleanContent = content.replace(/\[AI_COMMAND:[\s\S]*?\][\s\S]*?\[\/AI_COMMAND\]/g, '');
     
@@ -259,7 +264,7 @@ export default function AIAssistant() {
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50"
       >
-        {messages.map((message, index) => (
+        {messages.filter(message => message && message.content && typeof message.content === 'string').map((message, index) => (
           <div
             key={index}
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
