@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { PrismaClient } from "@/generated/prisma";
 import { revalidatePath } from "next/cache";
 
-import { EstadoTarea, Prisma } from "@/generated/prisma";
+import { EstadoTarea } from "@/generated/prisma";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +13,7 @@ export default async function ObligacionesPage({ searchParams }: { searchParams?
   en7.setDate(hoy.getDate() + 7);
   const vista = (searchParams?.vista ?? "todas").toLowerCase();
   const estadoFiltro = (searchParams?.estado ?? "TODAS").toUpperCase();
-  const where: any = {};
+  const where: Record<string, unknown> = {};
   if (vista === "proximas") {
     where.fechaLimite = { gte: hoy, lte: en7 };
   } else if (vista === "vencidas") {
