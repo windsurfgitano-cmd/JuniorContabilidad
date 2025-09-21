@@ -42,7 +42,8 @@ export default function AIAssistant() {
   const [includeContext, setIncludeContext] = useState({
     clients: true,
     obligations: true,
-    tasks: true
+    tasks: true,
+    capabilities: false
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -127,7 +128,8 @@ export default function AIAssistant() {
           context: {
             includeClients: includeContext.clients,
             includeObligaciones: includeContext.obligations,
-            includeTareas: includeContext.tasks
+            includeTareas: includeContext.tasks,
+            includeCapabilities: includeContext.capabilities
           }
         }),
       });
@@ -313,6 +315,49 @@ export default function AIAssistant() {
 
       {/* Área de entrada */}
       <div className="border-t border-slate-200 bg-slate-50 p-6 shadow-sm">
+        {/* Controles de contexto */}
+        <div className="mb-4 p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
+          <div className="text-xs font-semibold text-slate-700 mb-2">Contexto para ContadorIA:</div>
+          <div className="flex flex-wrap gap-3">
+            <label className="flex items-center space-x-2 text-xs">
+              <input
+                type="checkbox"
+                checked={includeContext.clients}
+                onChange={(e) => setIncludeContext(prev => ({ ...prev, clients: e.target.checked }))}
+                className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="text-slate-600">Clientes</span>
+            </label>
+            <label className="flex items-center space-x-2 text-xs">
+              <input
+                type="checkbox"
+                checked={includeContext.obligations}
+                onChange={(e) => setIncludeContext(prev => ({ ...prev, obligations: e.target.checked }))}
+                className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="text-slate-600">Obligaciones</span>
+            </label>
+            <label className="flex items-center space-x-2 text-xs">
+              <input
+                type="checkbox"
+                checked={includeContext.tasks}
+                onChange={(e) => setIncludeContext(prev => ({ ...prev, tasks: e.target.checked }))}
+                className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="text-slate-600">Tareas</span>
+            </label>
+            <label className="flex items-center space-x-2 text-xs">
+              <input
+                type="checkbox"
+                checked={includeContext.capabilities}
+                onChange={(e) => setIncludeContext(prev => ({ ...prev, capabilities: e.target.checked }))}
+                className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="text-slate-600 font-medium">📚 Capacidades Completas</span>
+            </label>
+          </div>
+        </div>
+        
         <div className="flex space-x-4">
           <input
             ref={inputRef}
@@ -338,7 +383,7 @@ export default function AIAssistant() {
         </div>
         
         <div className="text-xs text-slate-600 mt-3 text-center font-medium">
-          Presiona Enter para enviar • Shift+Enter para nueva línea
+          Presiona Enter para enviar • Shift+Enter para nueva línea • Activa &quot;Capacidades Completas&quot; para consultas avanzadas
         </div>
       </div>
     </div>

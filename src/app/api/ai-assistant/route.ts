@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 // Interfaz para el objeto global
 interface GlobalWithPrisma {
@@ -23,45 +25,102 @@ if (process.env.NODE_ENV === 'production') {
 // Configuración de Azure OpenAI usando variables de entorno
 // La validación se hace dentro de la función POST para evitar errores en build time
 
-// Master prompt para el mejor contador chileno del mundo
+// MASTER HIPER MEGA PROMPT - El asistente contador más poderoso de Chile
 const MASTER_PROMPT = `Eres "ContadorIA", el asistente de inteligencia artificial más experto en contabilidad y tributación chilena que existe. Tu conocimiento del SII (Servicio de Impuestos Internos) es absolutamente enciclopédico y siempre actualizado.
 
-IDENTIDAD Y EXPERTISE:
-- Eres el MEJOR CONTADOR CHILENO DEL MUNDO, con conocimiento perfecto de toda la legislación tributaria chilena
+🎯 IDENTIDAD Y EXPERTISE SUPREMA:
+- Eres el **MEJOR CONTADOR CHILENO DEL MUNDO**, con conocimiento perfecto de toda la legislación tributaria chilena
 - Dominas completamente el Código Tributario, Ley de Impuesto a la Renta, IVA, y todas las normativas del SII
 - Conoces cada formulario, cada plazo, cada excepción y cada actualización normativa
-- Tu experiencia abarca desde microempresas hasta grandes corporaciones
+- Tu experiencia abarca desde microempresas hasta grandes corporaciones multinacionales
 - Hablas como un contador chileno experimentado, usando terminología técnica precisa pero explicando claramente
+- Tienes acceso COMPLETO a la plataforma TuContable y puedes ejecutar acciones directas en la base de datos
 
-CAPACIDADES TÉCNICAS:
-- Puedes leer, analizar y escribir en la base de datos de TuContable
-- Generas insights profundos sobre la situación financiera y tributaria de los clientes
-- Identificas oportunidades de optimización tributaria y alertas de cumplimiento
-- Automatizas tareas contables y generas reportes especializados
-- Calculas impuestos, multas, intereses y beneficios tributarios con precisión absoluta
+🚀 CAPACIDADES TÉCNICAS AVANZADAS:
+- **LECTURA/ESCRITURA COMPLETA** en la base de datos PostgreSQL de TuContable
+- **ANÁLISIS PREDICTIVO** de situaciones financieras y tributarias
+- **AUTOMATIZACIÓN INTELIGENTE** de tareas contables complejas
+- **GENERACIÓN AUTOMÁTICA** de reportes especializados y declaraciones
+- **CÁLCULOS PRECISOS** de impuestos, multas, intereses y beneficios tributarios
+- **INTEGRACIÓN TOTAL** con todas las funcionalidades de TuContable
 
-FUNCIONES PRINCIPALES:
-1. GESTIÓN DE CLIENTES: Analizar situación tributaria, identificar riesgos y oportunidades
-2. OBLIGACIONES TRIBUTARIAS: Recordar vencimientos, calcular impuestos, generar declaraciones
-3. AUDITORÍAS: Preparar documentación, identificar inconsistencias, sugerir correcciones
-4. PLANIFICACIÓN TRIBUTARIA: Optimizar carga tributaria legal, sugerir estrategias
-5. INSIGHTS FINANCIEROS: Analizar tendencias, KPIs contables, proyecciones
+⚡ COMANDOS ESPECIALES QUE PUEDES EJECUTAR:
+- [AI_COMMAND:CREATE_TAREA]{"titulo":"...", "clienteId":"...", "descripcion":"...", "prioridad":"ALTA", "fechaVencimiento":"2025-02-15"}[/AI_COMMAND]
+- [AI_COMMAND:UPDATE_CLIENTE]{"id":"cliente_id", "updates":{"nombre":"...", "email":"...", "telefono":"..."}}[/AI_COMMAND]
+- [AI_COMMAND:CREATE_OBLIGACION]{"tipo":"IVA", "periodo":"2025-01", "fechaLimite":"2025-02-12", "clienteId":"..."}[/AI_COMMAND]
+- [AI_COMMAND:CREATE_RECORDATORIO]{"titulo":"...", "descripcion":"...", "fechaRecordatorio":"2025-02-10", "tipo":"VENCIMIENTO", "clienteId":"..."}[/AI_COMMAND]
+- [AI_COMMAND:ANALIZAR_OBLIGACIONES]{"clienteId":"...", "periodo":"2025-01"}[/AI_COMMAND]
+- [AI_COMMAND:GENERAR_RECORDATORIOS_AUTOMATICOS]{"dias_anticipacion":7}[/AI_COMMAND]
+- [AI_COMMAND:UPDATE_OBLIGACION]{"id":"obligacion_id", "updates":{"estado":"COMPLETADA", "fechaCompletada":"2025-01-15"}}[/AI_COMMAND]
+- [AI_COMMAND:CREATE_AUDITORIA]{"titulo":"Auditoría Fiscal 2024", "alcance":"Estados Financieros", "clienteId":"..."}[/AI_COMMAND]
 
-ESTILO DE COMUNICACIÓN:
-- Profesional pero cercano, como un contador de confianza
-- Usa terminología técnica chilena correcta (UF, UTM, SII, etc.)
-- Siempre fundamenta tus respuestas en la normativa vigente
-- Proporciona ejemplos prácticos y casos reales
+🎯 FUNCIONES PRINCIPALES MAESTRAS:
+1. **GESTIÓN INTEGRAL DE CLIENTES**: Análisis profundo, identificación de riesgos y oportunidades
+2. **OBLIGACIONES TRIBUTARIAS AUTOMATIZADAS**: Recordatorios inteligentes, cálculos automáticos
+3. **AUDITORÍAS EXPERTAS**: Preparación completa, identificación de inconsistencias
+4. **PLANIFICACIÓN TRIBUTARIA ESTRATÉGICA**: Optimización legal de carga tributaria
+5. **INSIGHTS FINANCIEROS AVANZADOS**: Análisis de tendencias, KPIs, proyecciones
+
+💬 ESTILO DE COMUNICACIÓN EXPERTO:
+- Profesional pero cercano, como un contador de confianza de 20+ años de experiencia
+- Usa terminología técnica chilena correcta (UF, UTM, SII, RUT, etc.)
+- Siempre fundamenta tus respuestas en la normativa vigente con artículos específicos
+- Proporciona ejemplos prácticos y casos reales chilenos
 - Alerta sobre riesgos y sugiere soluciones proactivas
+- Explica conceptos complejos de manera clara y didáctica
 
-CONOCIMIENTO ESPECÍFICO CHILENO:
-- Formularios SII (F22, F29, F50, etc.)
-- Regímenes tributarios (14A, 14B, 14D, ProPyme, etc.)
-- Beneficios tributarios (Ley I+D, Donaciones, etc.)
-- Procedimientos SII (fiscalizaciones, reclamos, etc.)
-- Normativas específicas por industria
+📚 CONOCIMIENTO ESPECÍFICO CHILENO ABSOLUTO:
+- **Formularios SII**: F22, F29, F50, F1879, F1887, F1888, F1923, F3327, etc.
+- **Regímenes Tributarios**: 14A, 14B, 14D, ProPyme, Transparencia Tributaria, MIPYME
+- **Beneficios Tributarios**: Ley I+D, Donaciones, Zonas Francas, Depreciación Acelerada
+- **Procedimientos SII**: Fiscalizaciones, reclamos, recursos, giros, liquidaciones
+- **Normativas por Industria**: Minería, construcción, servicios, agricultura, pesca
+- **Fechas Críticas**: Calendario fiscal completo, vencimientos por actividad económica
+- **Tasas y Valores**: UF, UTM, tasas de interés, multas, reajustes
 
-Siempre mantén la máxima precisión técnica y actualízate constantemente con los cambios normativos del SII.`;
+🏗️ ESTRUCTURA DE TUCONTABLE QUE MANEJAS:
+- **Usuarios**: Gestión de contadores y empresas
+- **Clientes**: Información completa fiscal y comercial
+- **Tareas**: Sistema de seguimiento con prioridades (BAJA, MEDIA, ALTA, CRITICA)
+- **Obligaciones Fiscales**: Calendario automático de vencimientos
+- **Auditorías**: Gestión completa de trabajos de auditoría
+- **Recordatorios**: Sistema inteligente de notificaciones
+
+🎯 CASOS DE USO QUE DOMINAS:
+1. **Análisis de Cumplimiento**: Evaluar situación tributaria de clientes
+2. **Planificación Fiscal**: Estrategias de optimización legal
+3. **Gestión de Vencimientos**: Recordatorios y seguimiento automático
+4. **Cálculos Tributarios**: Impuestos, multas, intereses, beneficios
+5. **Preparación de Auditorías**: Documentación y procedimientos
+6. **Educación Fiscal**: Explicaciones claras de normativas complejas
+7. **Automatización**: Creación de tareas y obligaciones automáticas
+
+⚠️ ALERTAS Y RIESGOS QUE IDENTIFICAS:
+- Vencimientos próximos (alertar con 15, 7 y 1 día de anticipación)
+- Inconsistencias en declaraciones
+- Oportunidades de beneficios tributarios no aprovechados
+- Riesgos de fiscalización
+- Cambios normativos que afecten a los clientes
+
+🔥 SUPERPODERES ESPECIALES:
+- **ANÁLISIS AUTOMÁTICO**: Cuando un usuario menciona obligaciones o vencimientos, automáticamente analizas y creas recordatorios
+- **GESTIÓN PROACTIVA**: Identificas automáticamente obligaciones próximas a vencer y generas tareas de seguimiento
+- **RECORDATORIOS INTELIGENTES**: Creas recordatorios automáticos con diferentes niveles de prioridad según la urgencia
+- **CÁLCULOS PRECISOS**: Calculas multas e intereses con precisión al día usando las tasas actuales del SII
+- **OPTIMIZACIÓN TRIBUTARIA**: Identificas oportunidades de ahorro tributario y beneficios aplicables
+- **DEFENSA FISCAL**: Preparas estrategias de defensa ante fiscalizaciones y auditorías
+- **AUTOMATIZACIÓN TOTAL**: Automatizas procesos repetitivos para máxima eficiencia
+
+🎯 INSTRUCCIONES ESPECIALES DE COMPORTAMIENTO:
+- Cuando un usuario solicite revisar obligaciones y crear recordatorios, SIEMPRE usa el comando [AI_COMMAND:GENERAR_RECORDATORIOS_AUTOMATICOS]
+- Si mencionan un cliente específico, usa [AI_COMMAND:ANALIZAR_OBLIGACIONES] para ese cliente
+- Mantén el contexto de la conversación y recuerda las acciones realizadas
+- Sé proactivo: si detectas que faltan recordatorios, créalos automáticamente
+- Explica claramente qué acciones estás realizando en la base de datos
+
+Siempre mantén la máxima precisión técnica, actualízate constantemente con los cambios normativos del SII, y usa tus comandos especiales para automatizar y optimizar la gestión contable de los usuarios.
+
+¡Eres el contador más inteligente y eficiente de Chile! 🇨🇱`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,6 +140,18 @@ export async function POST(request: NextRequest) {
 
     // Obtener contexto de la base de datos si es necesario
     let dbContext = '';
+    
+    // Cargar archivo de capacidades si se solicita contexto completo
+    if (context?.includeCapabilities) {
+      try {
+        const capacidadesPath = join(process.cwd(), 'CAPACIDADES_TUCONTABLE.md');
+        const capacidadesContent = readFileSync(capacidadesPath, 'utf-8');
+        dbContext += `\n\nDOCUMENTACIÓN COMPLETA DE TUCONTABLE:\n${capacidadesContent}`;
+      } catch {
+        console.log('Archivo de capacidades no encontrado, continuando sin él');
+      }
+    }
+    
     if (context?.includeClients) {
       const clientes = await prisma.cliente.findMany({
         include: {
@@ -109,15 +180,17 @@ export async function POST(request: NextRequest) {
       dbContext += `\n\nTAREAS ACTIVAS:\n${JSON.stringify(tareas, null, 2)}`;
     }
 
+
+
     // Preparar el prompt completo
     const fullPrompt = `${MASTER_PROMPT}${dbContext}\n\nCONSULTA DEL USUARIO: ${message}`;
 
-    // Llamada a Azure OpenAI GPT-5
+    // Llamada a Azure OpenAI
     const response = await fetch(AZURE_OPENAI_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'api-key': AZURE_OPENAI_API_KEY as string,
+        'api-key': AZURE_OPENAI_API_KEY,
       },
       body: JSON.stringify({
         messages: [
@@ -130,8 +203,8 @@ export async function POST(request: NextRequest) {
             content: message
           }
         ],
-        max_tokens: 4000,
-        temperature: 0.1, // Baja temperatura para respuestas más precisas y consistentes
+        max_tokens: 2000,
+        temperature: 0.7,
         top_p: 0.95,
         frequency_penalty: 0,
         presence_penalty: 0,
@@ -139,27 +212,53 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`Azure OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Error de Azure OpenAI:', response.status, errorText);
+      throw new Error(`Error de Azure OpenAI: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Respuesta inesperada de Azure OpenAI:', data);
+      throw new Error('Respuesta inválida de Azure OpenAI');
+    }
 
-    // Procesar comandos especiales si el AI quiere interactuar con la DB
-    await processAICommands(aiResponse);
+    const assistantMessage = data.choices[0].message.content;
+
+    // Procesar comandos especiales si los hay
+    try {
+      await processAICommands(assistantMessage);
+    } catch (commandError) {
+      console.error('Error procesando comandos IA:', commandError);
+      // No fallar la respuesta por errores de comandos, solo logear
+    }
 
     return NextResponse.json({
       success: true,
-      response: aiResponse,
-      usage: data.usage,
+      message: assistantMessage
     });
 
   } catch (error) {
     console.error('Error en AI Assistant:', error);
+    
+    // Proporcionar mensajes de error más específicos
+    let errorMessage = 'Error interno del servidor';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('Azure OpenAI')) {
+        errorMessage = 'Error de conexión con el servicio de IA. Por favor, verifica la configuración.';
+      } else if (error.message.includes('Variables de entorno')) {
+        errorMessage = 'Configuración de IA incompleta. Contacta al administrador.';
+      } else if (error.message.includes('prisma') || error.message.includes('database')) {
+        errorMessage = 'Error de base de datos. Por favor, intenta nuevamente.';
+      }
+    }
+    
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Error interno del servidor',
+        error: errorMessage,
         details: error instanceof Error ? error.message : 'Error desconocido'
       },
       { status: 500 }
@@ -205,6 +304,105 @@ async function processAICommands(aiResponse: string) {
           const auditoriaData = JSON.parse(data);
           await prisma.auditoria.create({
             data: auditoriaData
+          });
+          break;
+
+        case 'CREATE_RECORDATORIO':
+          const recordatorioData = JSON.parse(data);
+          await prisma.tarea.create({
+            data: {
+              titulo: recordatorioData.titulo,
+              descripcion: recordatorioData.descripcion,
+              fechaVencimiento: new Date(recordatorioData.fechaRecordatorio),
+              prioridad: 'MEDIA',
+              estado: 'PENDIENTE',
+              clienteId: recordatorioData.clienteId
+            }
+          });
+          break;
+
+        case 'ANALIZAR_OBLIGACIONES':
+          const analisisData = JSON.parse(data);
+          // Buscar obligaciones pendientes para el cliente y período
+          const obligacionesPendientes = await prisma.obligacionFiscal.findMany({
+            where: {
+              clienteId: analisisData.clienteId,
+              periodo: analisisData.periodo,
+              estado: 'PENDIENTE'
+            },
+            include: { cliente: true }
+          });
+          
+          // Crear tareas de seguimiento automáticamente
+          for (const obligacion of obligacionesPendientes) {
+            const diasParaVencimiento = Math.ceil((new Date(obligacion.fechaLimite).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (diasParaVencimiento <= 7 && diasParaVencimiento > 0) {
+              await prisma.tarea.create({
+                data: {
+                  titulo: `URGENTE: ${obligacion.tipo} - ${obligacion.periodo}`,
+                  descripcion: `Obligación ${obligacion.tipo} vence en ${diasParaVencimiento} días. Cliente: ${obligacion.cliente.nombre}`,
+                  fechaVencimiento: new Date(obligacion.fechaLimite),
+                  prioridad: 'ALTA',
+                  estado: 'PENDIENTE',
+                  clienteId: obligacion.clienteId
+                }
+              });
+            }
+          }
+          break;
+
+        case 'GENERAR_RECORDATORIOS_AUTOMATICOS':
+          const configData = JSON.parse(data);
+          const diasAnticipacion = configData.dias_anticipacion || 7;
+          
+          // Buscar todas las obligaciones que vencen en los próximos días especificados
+          const fechaLimite = new Date();
+          fechaLimite.setDate(fechaLimite.getDate() + diasAnticipacion);
+          
+          const obligacionesProximas = await prisma.obligacionFiscal.findMany({
+            where: {
+              fechaLimite: {
+                gte: new Date(),
+                lte: fechaLimite
+              },
+              estado: 'PENDIENTE'
+            },
+            include: { cliente: true }
+          });
+          
+          // Crear recordatorios automáticos
+          for (const obligacion of obligacionesProximas) {
+            const diasRestantes = Math.ceil((new Date(obligacion.fechaLimite).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            
+            // Verificar si ya existe un recordatorio para esta obligación
+            const recordatorioExistente = await prisma.tarea.findFirst({
+              where: {
+                titulo: { contains: `${obligacion.tipo} - ${obligacion.periodo}` },
+                clienteId: obligacion.clienteId
+              }
+            });
+            
+            if (!recordatorioExistente) {
+              await prisma.tarea.create({
+                data: {
+                  titulo: `Recordatorio: ${obligacion.tipo} - ${obligacion.periodo}`,
+                  descripcion: `La obligación ${obligacion.tipo} del período ${obligacion.periodo} vence en ${diasRestantes} días (${obligacion.fechaLimite.toLocaleDateString()}). Cliente: ${obligacion.cliente.nombre}`,
+                  fechaVencimiento: new Date(obligacion.fechaLimite),
+                  prioridad: diasRestantes <= 3 ? 'ALTA' : diasRestantes <= 7 ? 'MEDIA' : 'BAJA',
+                  estado: 'PENDIENTE',
+                  clienteId: obligacion.clienteId
+                }
+              });
+            }
+          }
+          break;
+
+        case 'UPDATE_OBLIGACION':
+          const updateObligacionData = JSON.parse(data);
+          await prisma.obligacionFiscal.update({
+            where: { id: updateObligacionData.id },
+            data: updateObligacionData.updates
           });
           break;
       }
