@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 export default async function TareasPage({ searchParams }: { searchParams?: { estado?: string } }) {
   const estadoFiltro = (searchParams?.estado ?? "TODAS").toUpperCase();
-  const where: Prisma.TareaWhereInput = estadoFiltro === "TODAS" ? {} : { estado: estadoFiltro };
+  const where: Prisma.TareaWhereInput = estadoFiltro === "TODAS" ? {} : { estado: estadoFiltro as EstadoTarea };
 
   const tareas = await prisma.tarea.findMany({
     where,
