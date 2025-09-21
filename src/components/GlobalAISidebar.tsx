@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, ChevronRight, Bot, User, Info } from 'lucide-react';
+import { MessageCircle, Send, Bot, User, Info } from 'lucide-react';
 import { usePageContext } from '@/contexts/PageContext';
-import { usePathname } from 'next/navigation';
 
 interface Message {
   id: string;

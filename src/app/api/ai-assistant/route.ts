@@ -1,22 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 
-// Crear instancia de Prisma de forma segura
+// Interfaz para el objeto global
+interface GlobalWithPrisma {
+  prisma?: PrismaClient;
+}
+
+// Configuración global de Prisma para evitar múltiples instancias en desarrollo
 let prisma: PrismaClient;
 
 if (process.env.NODE_ENV === 'production') {
   prisma = new PrismaClient();
 } else {
   // En desarrollo, usar una instancia global para evitar múltiples conexiones
-  if (!(global as any).prisma) {
-    (global as any).prisma = new PrismaClient();
+  const globalWithPrisma = global as GlobalWithPrisma;
+  if (!globalWithPrisma.prisma) {
+    globalWithPrisma.prisma = new PrismaClient();
   }
-  prisma = (global as any).prisma;
+  prisma = globalWithPrisma.prisma;
 }
 
 // Configuración de Azure OpenAI usando variables de entorno
 const AZURE_OPENAI_ENDPOINT = `${process.env.AZURE_OPENAI_ENDPOINT}/openai/deployments/${process.env.AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version=${process.env.AZURE_OPENAI_API_VERSION}`;
 const AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY;
+
+// Validar variables de entorno requeridas
+if (!process.env.AZURE_OPENAI_ENDPOINT || !process.env.AZURE_OPENAI_DEPLOYMENT_NAME || !process.env.AZURE_OPENAI_API_VERSION || !AZURE_OPENAI_API_KEY) {
+  throw new Error('Variables de entorno de Azure OpenAI no configuradas correctamente');
+}
 
 // Master prompt para el mejor contador chileno del mundo
 const MASTER_PROMPT = `Eres "ContadorIA", el asistente de inteligencia artificial más experto en contabilidad y tributación chilena que existe. Tu conocimiento del SII (Servicio de Impuestos Internos) es absolutamente enciclopédico y siempre actualizado.
@@ -100,7 +111,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'api-key': AZURE_OPENAI_API_KEY,
+        'api-key': AZURE_OPENAI_API_KEY as string,
       },
       body: JSON.stringify({
         messages: [

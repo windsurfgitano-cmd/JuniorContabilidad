@@ -64,16 +64,16 @@ export default function AsistenteIAPage() {
               </h3>
               <div className="space-y-3">
                 <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg cursor-pointer hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 border border-blue-100">
-                  <span className="text-sm text-gray-700">"¿Qué obligaciones vencen esta semana?"</span>
+                  <span className="text-sm text-gray-700">&ldquo;¿Qué obligaciones vencen esta semana?&rdquo;</span>
                 </div>
                 <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg cursor-pointer hover:from-green-100 hover:to-emerald-100 transition-all duration-200 border border-green-100">
-                  <span className="text-sm text-gray-700">"Analiza la situación tributaria de [cliente]"</span>
+                  <span className="text-sm text-gray-700">&ldquo;Analiza la situación tributaria de [cliente]&rdquo;</span>
                 </div>
                 <div className="p-3 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg cursor-pointer hover:from-purple-100 hover:to-violet-100 transition-all duration-200 border border-purple-100">
-                  <span className="text-sm text-gray-700">"Crea una tarea para revisar F22 de enero"</span>
+                  <span className="text-sm text-gray-700">&ldquo;Crea una tarea para revisar F22 de enero&rdquo;</span>
                 </div>
                 <div className="p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg cursor-pointer hover:from-orange-100 hover:to-amber-100 transition-all duration-200 border border-orange-100">
-                  <span className="text-sm text-gray-700">"¿Qué beneficios tributarios aplican?"</span>
+                  <span className="text-sm text-gray-700">&ldquo;¿Qué beneficios tributarios aplican?&rdquo;</span>
                 </div>
               </div>
             </div>

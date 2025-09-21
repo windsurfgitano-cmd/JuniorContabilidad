@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Database, TrendingUp, AlertTriangle, Calendar } from 'lucide-react';
+import { Bot, User } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -10,11 +10,18 @@ interface Message {
   timestamp: Date;
 }
 
+interface ProximoVencimiento {
+  id: string;
+  descripcion: string;
+  fecha: string;
+  tipo: string;
+}
+
 interface AIStats {
   totalClientes: number;
   obligacionesPendientes: number;
   tareasPendientes: number;
-  proximosVencimientos: any[];
+  proximosVencimientos: ProximoVencimiento[];
 }
 
 export default function AIAssistant() {
@@ -164,7 +171,7 @@ export default function AIAssistant() {
 
   const formatMessage = (content: string) => {
     // Remover comandos especiales de la visualización
-    const cleanContent = content.replace(/\[AI_COMMAND:.*?\].*?\[\/AI_COMMAND\]/gs, '');
+    const cleanContent = content.replace(/\[AI_COMMAND:[\s\S]*?\][\s\S]*?\[\/AI_COMMAND\]/g, '');
     
     // Formatear texto con markdown básico
     return cleanContent
