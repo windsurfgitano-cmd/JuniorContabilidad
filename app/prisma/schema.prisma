@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nombre    String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clientes  Cliente[]
+}
+
+model Cliente {
+  id          String   @id @default(cuid())
+  nombre      String
+  ruc         String?  @unique
+  email       String?
+  telefono    String?
+  direccion   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId   String
+  tareas      Tarea[]
+  obligaciones ObligacionFiscal[]
+  auditorias  Auditoria[]
+}
+
+model Tarea {
+  id          String   @id @default(cuid())
+  titulo      String
+  descripcion String?
+  estado      EstadoTarea @default(PENDIENTE)
+  prioridad   Prioridad   @default(MEDIA)
+  fechaVencimiento DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cliente     Cliente? @relation(fields: [clienteId], references: [id])
+  clienteId   String?
+  // Relaciones opcionales con obligación fiscal o auditoría
+  obligacion   ObligacionFiscal? @relation(fields: [obligacionId], references: [id])
+  obligacionId String?
+  auditoria    Auditoria? @relation(fields: [auditoriaId], references: [id])
+  auditoriaId  String?
+  recordatorios Recordatorio[]
+}
+
+model ObligacionFiscal {
+  id            String   @id @default(cuid())
+  tipo          String   // Ej: IVA, Renta, Retenciones, AFP, ATS, etc.
+  periodo       String   // Ej: 2025-08, 2025-Q3
+  fechaLimite   DateTime
+  estado        EstadoTarea @default(PENDIENTE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  cliente       Cliente  @relation(fields: [clienteId], references: [id])
+  clienteId     String
+  tareas        Tarea[]
+}
+
+model Auditoria {
+  id          String   @id @default(cuid())
+  titulo      String
+  alcance     String?
+  fechaInicio DateTime?
+  fechaFin    DateTime?
+  estado      EstadoTarea @default(EN_PROCESO)
+  cliente     Cliente  @relation(fields: [clienteId], references: [id])
+  clienteId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tareas      Tarea[]
+}
+
+model Recordatorio {
+  id        String   @id @default(cuid())
+  fecha     DateTime
+  mensaje   String
+  tarea     Tarea    @relation(fields: [tareaId], references: [id])
+  tareaId   String
+  enviado   Boolean  @default(false)
+  canal     CanalRecordatorio @default(SISTEMA)
+}
+
+enum EstadoTarea {
+  PENDIENTE
+  EN_PROCESO
+  BLOQUEADO
+  COMPLETADO
+}
+
+enum Prioridad {
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+enum CanalRecordatorio {
+  SISTEMA
+  EMAIL
+}
