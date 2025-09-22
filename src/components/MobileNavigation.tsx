@@ -123,7 +123,7 @@ export default function MobileNavigation({ buttonOnly = false }: MobileNavigatio
   useEffect(() => {
     setIsOpen(false);
     setExpandedSubmenu(null);
-  }, [pathname]);
+  }, [pathname, setIsOpen, setExpandedSubmenu]);
 
   // Prevenir scroll del body cuando el menú está abierto
   useEffect(() => {

@@ -74,7 +74,7 @@ export function validarRUT(rut: string): {
       digito_verificador: digitoVerificador
     };
     
-  } catch (_) {
+  } catch {
     return {
       valido: false,
       rut_formateado: rut,
@@ -283,7 +283,7 @@ export async function convertirUFAPesos(cantidadUF: number, fecha?: string): Pro
       mensaje: `${cantidadUF} UF = ${formatearPesos(totalPesos)} (${fechaFormateada})`
     };
     
-  } catch (_) {
+  } catch {
     return {
       cantidad_uf: cantidadUF,
       fecha_consulta: fecha || new Date().toISOString().split('T')[0],
@@ -356,7 +356,7 @@ export async function convertirPesosAUF(montoPesos: number, fecha?: string): Pro
       mensaje: `${formatearPesos(montoPesos)} = ${cantidadUF.toFixed(2)} UF (${fechaFormateada})`
     };
     
-  } catch (_) {
+  } catch {
     return {
       monto_pesos: montoPesos,
       fecha_consulta: fecha || new Date().toISOString().split('T')[0],
@@ -449,7 +449,7 @@ export async function consultarEstadoSII(rut: string): Promise<{
       advertencias: resultadoSimulado.advertencias
     };
 
-  } catch (_) {
+  } catch {
     return {
       rut: rut,
       rut_formateado: rut,
@@ -626,7 +626,7 @@ export async function verificarAutorizacionBoletas(rut: string): Promise<{
       };
     }
 
-  } catch (_) {
+  } catch {
     return {
       rut: rut,
       autorizado_boletas: false,
@@ -751,7 +751,7 @@ export function calcularVencimientoF29(rut: string, periodo: string): {
       mensaje: mensaje
     };
 
-  } catch (_) {
+  } catch {
     return {
       rut: rut,
       periodo: periodo,

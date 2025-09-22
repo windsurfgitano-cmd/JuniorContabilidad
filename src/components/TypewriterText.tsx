@@ -25,17 +25,6 @@ export default function TypewriterText({
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastTextRef = useRef('');
 
-  // Early return si no hay contenido
-  if (!text) {
-    return (
-      <div className="prose prose-sm max-w-none">
-        <div className="flex items-center space-x-2">
-          <div className="animate-pulse">Escribiendo...</div>
-        </div>
-      </div>
-    );
-  }
-
   // Efecto para manejar el texto que llega por streaming
   useEffect(() => {
     if (isStreaming) {
@@ -101,6 +90,17 @@ export default function TypewriterText({
       }
     };
   }, []);
+
+  // Early return si no hay contenido
+  if (!text) {
+    return (
+      <div className="prose prose-sm max-w-none">
+        <div className="flex items-center space-x-2">
+          <div className="animate-pulse">Escribiendo...</div>
+        </div>
+      </div>
+    );
+  }
 
   // Formatear el texto con markdown básico
   const formatText = (content: string) => {

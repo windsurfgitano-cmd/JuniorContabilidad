@@ -311,7 +311,7 @@ export async function POST(request: NextRequest) {
                       fullMessage += content;
                       controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ content })}\n\n`));
                     }
-                  } catch (e) {
+                  } catch {
                     // Ignorar errores de parsing de chunks individuales
                   }
                 }
@@ -410,7 +410,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Función para guardar conversación
-async function saveConversation(conversationId: string | null, userMessage: string, assistantMessage: string, context: any) {
+async function saveConversation(conversationId: string | null, userMessage: string, assistantMessage: string, context: Record<string, unknown>) {
   let finalConversationId = conversationId;
   try {
     if (!conversationId) {

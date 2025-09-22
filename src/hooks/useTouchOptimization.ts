@@ -130,7 +130,7 @@ export const useTouchOptimization = (options: TouchOptimizationOptions = {}) => 
     let timeoutId: NodeJS.Timeout;
     
     return {
-      onTouchStart: (_: React.TouchEvent) => {
+      onTouchStart: () => {
         timeoutId = setTimeout(() => {
           triggerHapticFeedback('heavy');
           callback();
