@@ -1,0 +1,33 @@
+# Dependencias para SII Scraper
+# Scraping y parsing web
+requests==2.31.0
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# Manejo de URLs y parsing
+urllib3==2.0.7
+
+# Utilidades de fecha y tiempo
+python-dateutil==2.8.2
+
+# Logging y configuración
+colorlog==6.7.0
+
+# Manejo de archivos y compresión
+zipfile36==0.1.3
+
+# Opcional: Para análisis de PDFs (si se necesita en el futuro)
+PyPDF2==3.0.1
+pdfplumber==0.9.0
+
+# Opcional: Para manejo de datos estructurados
+pandas==2.1.4
+openpyxl==3.1.2
+
+# Opcional: Para validación de schemas XML
+xmlschema==2.5.1
+lxml==4.9.3
+
+# Herramientas de desarrollo y testing
+pytest==7.4.3
+pytest-cov==4.1.0

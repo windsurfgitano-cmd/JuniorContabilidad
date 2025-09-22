@@ -1,0 +1,21 @@
+2025-09-22 04:05:27,499 - INFO - Iniciando descarga de leyes tributarias desde LeyChile.cl
+2025-09-22 04:05:27,499 - INFO - Descargando: Decreto Ley 824 - Ley de Impuesto a la Renta
+2025-09-22 04:05:27,890 - WARNING - No se encontró enlace PDF para Decreto Ley 824 - Ley de Impuesto a la Renta
+2025-09-22 04:05:29,890 - INFO - Descargando: Decreto Ley 825 - Ley de IVA
+2025-09-22 04:05:30,235 - WARNING - No se encontró enlace PDF para Decreto Ley 825 - Ley de IVA
+2025-09-22 04:05:32,236 - INFO - Descargando: Decreto Ley 830 - Código Tributario
+2025-09-22 04:05:32,539 - WARNING - No se encontró enlace PDF para Decreto Ley 830 - Código Tributario
+2025-09-22 04:05:34,540 - INFO - Descargando: Decreto Ley 3475 - Ley de Timbres y Estampillas
+2025-09-22 04:05:34,838 - WARNING - No se encontró enlace PDF para Decreto Ley 3475 - Ley de Timbres y Estampillas
+2025-09-22 04:05:36,840 - INFO - Descargando: Ley 17.235 - Impuesto Territorial
+2025-09-22 04:05:37,027 - WARNING - No se encontró enlace PDF para Ley 17.235 - Impuesto Territorial
+2025-09-22 04:05:39,029 - INFO - Descargando: Ley 16.271 - Impuesto Herencias y Donaciones
+2025-09-22 04:05:39,315 - WARNING - No se encontró enlace PDF para Ley 16.271 - Impuesto Herencias y Donaciones
+2025-09-22 04:05:41,319 - INFO - Descargando: Ley 18.211 - Impuesto a Bebidas Alcohólicas
+2025-09-22 04:05:41,340 - WARNING - No se encontró enlace PDF para Ley 18.211 - Impuesto a Bebidas Alcohólicas
+2025-09-22 04:05:43,342 - INFO - Descargando: Ley 19.995 - Casinos de Juego
+2025-09-22 04:05:43,646 - WARNING - No se encontró enlace PDF para Ley 19.995 - Casinos de Juego
+2025-09-22 04:05:45,647 - INFO - Descargando: DFL 7 - Ordenanza de Aduanas
+2025-09-22 04:05:45,946 - WARNING - No se encontró enlace PDF para DFL 7 - Ordenanza de Aduanas
+2025-09-22 04:05:47,948 - INFO - Descarga completada: 0/9 exitosas
+2025-09-22 04:05:47,948 - INFO - Reporte guardado en: data/reporte_leyes_20250922_040547.json

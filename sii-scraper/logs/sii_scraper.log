@@ -1,0 +1,40 @@
+2025-09-22 04:06:03,068 - INFO - Iniciando descarga completa de normativa SII
+2025-09-22 04:06:03,068 - INFO - Procesando resoluciones 2021
+2025-09-22 04:06:03,155 - WARNING - No existe índice para resoluciones 2021
+2025-09-22 04:06:03,155 - INFO - Procesando resoluciones 2022
+2025-09-22 04:06:03,169 - WARNING - No existe índice para resoluciones 2022
+2025-09-22 04:06:03,169 - INFO - Procesando resoluciones 2023
+2025-09-22 04:06:03,187 - WARNING - No existe índice para resoluciones 2023
+2025-09-22 04:06:03,187 - INFO - Procesando resoluciones 2024
+2025-09-22 04:06:03,202 - WARNING - No existe índice para resoluciones 2024
+2025-09-22 04:06:03,203 - INFO - Procesando resoluciones 2025
+2025-09-22 04:06:03,222 - WARNING - No existe índice para resoluciones 2025
+2025-09-22 04:06:03,222 - INFO - Procesando circulares 2021
+2025-09-22 04:06:03,240 - WARNING - No existe índice para circulares 2021
+2025-09-22 04:06:03,240 - INFO - Procesando circulares 2022
+2025-09-22 04:06:03,257 - WARNING - No existe índice para circulares 2022
+2025-09-22 04:06:03,258 - INFO - Procesando circulares 2023
+2025-09-22 04:06:03,273 - WARNING - No existe índice para circulares 2023
+2025-09-22 04:06:03,274 - INFO - Procesando circulares 2024
+2025-09-22 04:06:03,289 - WARNING - No existe índice para circulares 2024
+2025-09-22 04:06:03,289 - INFO - Procesando circulares 2025
+2025-09-22 04:06:03,307 - WARNING - No existe índice para circulares 2025
+2025-09-22 04:06:03,307 - INFO - Procesando schemas XML
+2025-09-22 04:06:03,307 - INFO - Descargando schemas XML de documentos electrónicos
+2025-09-22 04:06:03,325 - ERROR - Error descargando schemas: 404 Client Error: Not Found for url: https://www.sii.cl/factura_electronica/formato_xml.htm
+2025-09-22 04:06:03,325 - INFO - Descarga SII completada. Reporte: data/reporte_sii_20250922_040603.json
+2025-09-22 04:08:22,069 - INFO - Iniciando descarga completa de normativa SII
+2025-09-22 04:08:22,069 - INFO - Procesando resoluciones 2021
+2025-09-22 04:08:22,069 - INFO - Intentando acceder a: https://www.sii.cl/normativa_legislacion/resoluciones/2021/res_ind2021.htm
+2025-09-22 04:08:22,159 - INFO - Obteniendo enlaces de resoluciones_2021 desde: https://www.sii.cl/normativa_legislacion/resoluciones/2021/res_ind2021.htm
+2025-09-22 04:08:22,207 - INFO - Encontrados 144 enlaces de resoluciones_2021
+2025-09-22 04:10:56,817 - INFO - Resoluciones 2021: 144/144 descargadas
+2025-09-22 04:10:56,817 - INFO - Procesando resoluciones 2022
+2025-09-22 04:10:56,817 - INFO - Intentando acceder a: https://www.sii.cl/normativa_legislacion/resoluciones/2022/res_ind2022.htm
+2025-09-22 04:10:56,835 - INFO - Obteniendo enlaces de resoluciones_2022 desde: https://www.sii.cl/normativa_legislacion/resoluciones/2022/res_ind2022.htm
+2025-09-22 04:10:56,881 - INFO - Encontrados 129 enlaces de resoluciones_2022
+2025-09-22 04:13:14,706 - INFO - Resoluciones 2022: 129/129 descargadas
+2025-09-22 04:13:14,706 - INFO - Procesando resoluciones 2023
+2025-09-22 04:13:14,706 - INFO - Intentando acceder a: https://www.sii.cl/normativa_legislacion/resoluciones/2023/res_ind2023.htm
+2025-09-22 04:13:14,719 - INFO - Obteniendo enlaces de resoluciones_2023 desde: https://www.sii.cl/normativa_legislacion/resoluciones/2023/res_ind2023.htm
+2025-09-22 04:13:14,781 - INFO - Encontrados 150 enlaces de resoluciones_2023

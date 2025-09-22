@@ -1,0 +1,52 @@
+{
+  "exitosas": 0,
+  "fallidas": 9,
+  "total": 9,
+  "detalles": [
+    {
+      "codigo": "DL_824_Impuesto_Renta",
+      "nombre": "Decreto Ley 824 - Ley de Impuesto a la Renta",
+      "estado": "fallido"
+    },
+    {
+      "codigo": "DL_825_IVA",
+      "nombre": "Decreto Ley 825 - Ley de IVA",
+      "estado": "fallido"
+    },
+    {
+      "codigo": "DL_830_Codigo_Tributario",
+      "nombre": "Decreto Ley 830 - Código Tributario",
+      "estado": "fallido"
+    },
+    {
+      "codigo": "DL_3475_Timbres_Estampillas",
+      "nombre": "Decreto Ley 3475 - Ley de Timbres y Estampillas",
+      "estado": "fallido"
+    },
+    {
+      "codigo": "Ley_17235_Impuesto_Territorial",
+      "nombre": "Ley 17.235 - Impuesto Territorial",
+      "estado": "fallido"
+    },
+    {
+      "codigo": "Ley_16271_Herencias_Donaciones",
+      "nombre": "Ley 16.271 - Impuesto Herencias y Donaciones",
+      "estado": "fallido"
+    },
+    {
+      "codigo": "Ley_18211_Alcoholes",
+      "nombre": "Ley 18.211 - Impuesto a Bebidas Alcohólicas",
+      "estado": "fallido"
+    },
+    {
+      "codigo": "Ley_19995_Casinos",
+      "nombre": "Ley 19.995 - Casinos de Juego",
+      "estado": "fallido"
+    },
+    {
+      "codigo": "DFL_7_Aduanas",
+      "nombre": "DFL 7 - Ordenanza de Aduanas",
+      "estado": "fallido"
+    }
+  ]
+}

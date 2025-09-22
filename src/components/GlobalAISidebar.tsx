@@ -72,7 +72,10 @@ export default function GlobalAISidebar() {
             pageTitle: pageTitle,
             pageDescription: pageDescription,
             contextualHelp: contextualHelp,
-            previousMessages: messages.slice(-5) // Últimos 5 mensajes para contexto
+            previousMessages: messages.slice(-5), // Últimos 5 mensajes para contexto
+            includeClients: true,
+            includeObligaciones: true,
+            includeTareas: true
           }
         }),
       });

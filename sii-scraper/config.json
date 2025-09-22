@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "configurado_en": "2025-09-22T04:05:14.446276",
+  "configuracion": {
+    "delay_entre_descargas": 1,
+    "reintentos_maximos": 3,
+    "timeout_requests": 30,
+    "años_descarga_sii": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "rutas": {
+    "logs": "logs/",
+    "data": "data/",
+    "leyes": "leyes/",
+    "resoluciones": "resoluciones/",
+    "circulares": "circulares/",
+    "schemas": "schemas/"
+  }
+}

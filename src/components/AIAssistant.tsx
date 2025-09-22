@@ -79,7 +79,10 @@ Puedes preguntarme sobre:
             pageTitle: 'Asistente IA',
             pageDescription: 'Chat con ContadorIA',
             contextualHelp: [],
-            previousMessages: messages.slice(-5)
+            previousMessages: messages.slice(-5),
+            includeClients: true,
+            includeObligaciones: true,
+            includeTareas: true
           }
         }),
       });
