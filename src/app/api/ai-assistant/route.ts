@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { 
+  validarRUT, 
+  calcularIVANetoABruto, 
+  calcularIVABrutoANeto, 
+  extraerIVA, 
+  calcularRetencionHonorarios, 
+  calcularRetencionConstruccion,
+  convertirUFAPesos,
+  convertirPesosAUF,
+  calcularVencimientoF29,
+  consultarEstadoSII,
+  verificarAutorizacionBoletas
+} from '@/utils/contabilidad';
 
 // Interfaz para el objeto global
 interface GlobalWithPrisma {
@@ -45,6 +58,9 @@ const MASTER_PROMPT = `Eres "ContadorIA", el asistente de inteligencia artificia
 - **INTEGRACIÓN TOTAL** con todas las funcionalidades de TuContable
 
 ⚡ COMANDOS ESPECIALES QUE PUEDES EJECUTAR:
+
+🏢 GESTIÓN DE CLIENTES Y TAREAS:
+- [AI_COMMAND:CREATE_CLIENTE]{"nombre":"Empresa ABC SpA", "ruc":"76123456-7", "email":"contacto@empresa.cl", "telefono":"+56912345678", "direccion":"Av. Providencia 123, Santiago"}[/AI_COMMAND]
 - [AI_COMMAND:CREATE_TAREA]{"titulo":"...", "clienteId":"...", "descripcion":"...", "prioridad":"ALTA", "fechaVencimiento":"2025-02-15"}[/AI_COMMAND]
 - [AI_COMMAND:UPDATE_CLIENTE]{"id":"cliente_id", "updates":{"nombre":"...", "email":"...", "telefono":"..."}}[/AI_COMMAND]
 - [AI_COMMAND:CREATE_OBLIGACION]{"tipo":"IVA", "periodo":"2025-01", "fechaLimite":"2025-02-12", "clienteId":"..."}[/AI_COMMAND]
@@ -53,6 +69,23 @@ const MASTER_PROMPT = `Eres "ContadorIA", el asistente de inteligencia artificia
 - [AI_COMMAND:GENERAR_RECORDATORIOS_AUTOMATICOS]{"dias_anticipacion":7}[/AI_COMMAND]
 - [AI_COMMAND:UPDATE_OBLIGACION]{"id":"obligacion_id", "updates":{"estado":"COMPLETADA", "fechaCompletada":"2025-01-15"}}[/AI_COMMAND]
 - [AI_COMMAND:CREATE_AUDITORIA]{"titulo":"Auditoría Fiscal 2024", "alcance":"Estados Financieros", "clienteId":"..."}[/AI_COMMAND]
+
+🧮 VALIDACIONES Y CÁLCULOS TRIBUTARIOS:
+- [AI_COMMAND:VALIDAR_RUT]{"rut":"12345678-9"}[/AI_COMMAND]
+- [AI_COMMAND:CALCULAR_IVA_NETO_A_BRUTO]{"monto_neto":100000}[/AI_COMMAND]
+- [AI_COMMAND:CALCULAR_IVA_BRUTO_A_NETO]{"monto_bruto":119000}[/AI_COMMAND]
+- [AI_COMMAND:EXTRAER_IVA]{"monto_bruto":119000}[/AI_COMMAND]
+- [AI_COMMAND:CALCULAR_RETENCION_HONORARIOS]{"monto_honorarios":100000}[/AI_COMMAND]
+- [AI_COMMAND:CALCULAR_RETENCION_CONSTRUCCION]{"monto_construccion":1000000}[/AI_COMMAND]
+
+💰 CONVERSIONES Y FECHAS TRIBUTARIAS:
+- [AI_COMMAND:CONVERTIR_UF_PESOS]{"uf":100, "fecha":"2025-01-15"}[/AI_COMMAND]
+- [AI_COMMAND:CONVERTIR_PESOS_UF]{"pesos":3000000, "fecha":"2025-01-15"}[/AI_COMMAND]
+- [AI_COMMAND:FECHAS_VENCIMIENTO_F29]{"rut":"12345678-9", "periodo":"2025-01"}[/AI_COMMAND]
+
+🏛️ CONSULTAS SII (SERVICIO DE IMPUESTOS INTERNOS):
+- [AI_COMMAND:CONSULTAR_ESTADO_SII]{"rut":"12345678-9"}[/AI_COMMAND]
+- [AI_COMMAND:VERIFICAR_AUTORIZACION_BOLETAS]{"rut":"12345678-9"}[/AI_COMMAND]
 
 🎯 FUNCIONES PRINCIPALES MAESTRAS:
 1. **GESTIÓN INTEGRAL DE CLIENTES**: Análisis profundo, identificación de riesgos y oportunidades
@@ -136,7 +169,7 @@ export async function POST(request: NextRequest) {
     const AZURE_OPENAI_ENDPOINT = `${process.env.AZURE_OPENAI_ENDPOINT}/openai/deployments/${process.env.AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version=${process.env.AZURE_OPENAI_API_VERSION}`;
     const AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY;
 
-    const { message, context } = await request.json();
+    const { message, messages, conversationId, context } = await request.json();
 
     // Obtener contexto de la base de datos si es necesario
     let dbContext = '';
@@ -183,7 +216,32 @@ export async function POST(request: NextRequest) {
 
 
     // Preparar el prompt completo
-    const fullPrompt = `${MASTER_PROMPT}${dbContext}\n\nCONSULTA DEL USUARIO: ${message}`;
+    const fullPrompt = `${MASTER_PROMPT}${dbContext}`;
+
+    // Construir array de mensajes incluyendo historial
+    const conversationMessages = [
+      {
+        role: 'system',
+        content: fullPrompt
+      }
+    ];
+
+    // Agregar historial de mensajes si existe
+    if (messages && Array.isArray(messages)) {
+      // Convertir mensajes del frontend al formato de Azure OpenAI
+      messages.forEach(msg => {
+        conversationMessages.push({
+          role: msg.role === 'assistant' ? 'assistant' : 'user',
+          content: msg.content
+        });
+      });
+    }
+
+    // Agregar el mensaje actual
+    conversationMessages.push({
+      role: 'user',
+      content: message
+    });
 
     // Llamada a Azure OpenAI
     const response = await fetch(AZURE_OPENAI_ENDPOINT, {
@@ -193,16 +251,7 @@ export async function POST(request: NextRequest) {
         'api-key': AZURE_OPENAI_API_KEY,
       },
       body: JSON.stringify({
-        messages: [
-          {
-            role: 'system',
-            content: fullPrompt
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
+        messages: conversationMessages,
         max_tokens: 2000,
         temperature: 0.7,
         top_p: 0.95,
@@ -234,9 +283,62 @@ export async function POST(request: NextRequest) {
       // No fallar la respuesta por errores de comandos, solo logear
     }
 
+    // Guardar conversación en la base de datos
+    let finalConversationId = conversationId;
+    try {
+      if (!conversationId) {
+        // Crear nueva conversación
+        const newConversation = await prisma.conversacion.create({
+          data: {
+            titulo: message.substring(0, 100), // Primeros 100 caracteres como título
+            contexto: JSON.stringify(context),
+            fechaCreacion: new Date(),
+            fechaActualizacion: new Date()
+          }
+        });
+        finalConversationId = newConversation.id;
+      } else {
+        // Actualizar conversación existente
+        await prisma.conversacion.update({
+          where: { id: conversationId },
+          data: { fechaActualizacion: new Date() }
+        });
+      }
+
+      // Guardar mensaje del usuario
+      await prisma.mensaje.create({
+        data: {
+          contenido: message,
+          rol: 'USER',
+          timestamp: new Date(),
+          conversacionId: finalConversationId,
+          metadatos: JSON.stringify({ context })
+        }
+      });
+
+      // Guardar respuesta del asistente
+      await prisma.mensaje.create({
+        data: {
+          contenido: assistantMessage,
+          rol: 'ASSISTANT',
+          timestamp: new Date(),
+          conversacionId: finalConversationId,
+          metadatos: JSON.stringify({ 
+            model: 'gpt-4',
+            tokens: data.usage?.total_tokens || 0
+          })
+        }
+      });
+
+    } catch (dbError) {
+      console.error('Error guardando conversación:', dbError);
+      // No fallar la respuesta por errores de BD, solo logear
+    }
+
     return NextResponse.json({
       success: true,
-      message: assistantMessage
+      message: assistantMessage,
+      conversationId: finalConversationId
     });
 
   } catch (error) {
@@ -278,6 +380,20 @@ async function processAICommands(aiResponse: string) {
 
     try {
       switch (command) {
+        case 'CREATE_CLIENTE':
+          const clienteData = JSON.parse(data);
+          await prisma.cliente.create({
+            data: {
+              nombre: clienteData.nombre,
+              ruc: clienteData.ruc || null,
+              email: clienteData.email || null,
+              telefono: clienteData.telefono || null,
+              direccion: clienteData.direccion || null,
+              usuarioId: clienteData.usuarioId || 'default-user-id' // Temporal hasta implementar autenticación
+            }
+          });
+          break;
+
         case 'CREATE_TAREA':
           const tareaData = JSON.parse(data);
           await prisma.tarea.create({
@@ -286,10 +402,10 @@ async function processAICommands(aiResponse: string) {
           break;
 
         case 'UPDATE_CLIENTE':
-          const clienteData = JSON.parse(data);
+          const updateClienteData = JSON.parse(data);
           await prisma.cliente.update({
-            where: { id: clienteData.id },
-            data: clienteData.updates
+            where: { id: updateClienteData.id },
+            data: updateClienteData.updates
           });
           break;
 
@@ -404,6 +520,73 @@ async function processAICommands(aiResponse: string) {
             where: { id: updateObligacionData.id },
             data: updateObligacionData.updates
           });
+          break;
+
+        // 🧮 COMANDOS DE VALIDACIÓN Y CÁLCULOS TRIBUTARIOS
+        case 'VALIDAR_RUT':
+          const rutData = JSON.parse(data);
+          const resultadoRUT = validarRUT(rutData.rut);
+          console.log('Resultado validación RUT:', resultadoRUT);
+          break;
+
+        case 'CALCULAR_IVA_NETO_A_BRUTO':
+          const ivaNetoData = JSON.parse(data);
+          const resultadoIVANeto = calcularIVANetoABruto(ivaNetoData.monto_neto);
+          console.log('Resultado IVA Neto a Bruto:', resultadoIVANeto);
+          break;
+
+        case 'CALCULAR_IVA_BRUTO_A_NETO':
+          const ivaBrutoData = JSON.parse(data);
+          const resultadoIVABruto = calcularIVABrutoANeto(ivaBrutoData.monto_bruto);
+          console.log('Resultado IVA Bruto a Neto:', resultadoIVABruto);
+          break;
+
+        case 'EXTRAER_IVA':
+          const extraerIVAData = JSON.parse(data);
+          const resultadoExtraerIVA = extraerIVA(extraerIVAData.monto_bruto);
+          console.log('Resultado Extraer IVA:', resultadoExtraerIVA);
+          break;
+
+        case 'CALCULAR_RETENCION_HONORARIOS':
+          const honorariosData = JSON.parse(data);
+          const resultadoHonorarios = calcularRetencionHonorarios(honorariosData.monto_honorarios);
+          console.log('Resultado Retención Honorarios:', resultadoHonorarios);
+          break;
+
+        case 'CALCULAR_RETENCION_CONSTRUCCION':
+          const construccionData = JSON.parse(data);
+          const resultadoConstruccion = calcularRetencionConstruccion(construccionData.monto_construccion);
+          console.log('Resultado Retención Construcción:', resultadoConstruccion);
+          break;
+
+        case 'CONVERTIR_UF_PESOS':
+          const ufPesosData = JSON.parse(data);
+          const resultadoUFPesos = await convertirUFAPesos(ufPesosData.uf, ufPesosData.fecha);
+          console.log('Resultado UF a Pesos:', resultadoUFPesos);
+          break;
+
+        case 'CONVERTIR_PESOS_UF':
+          const pesosUFData = JSON.parse(data);
+          const resultadoPesosUF = await convertirPesosAUF(pesosUFData.pesos, pesosUFData.fecha);
+          console.log('Resultado Pesos a UF:', resultadoPesosUF);
+          break;
+
+        case 'FECHAS_VENCIMIENTO_F29':
+          const f29Data = JSON.parse(data);
+          const resultadoF29 = calcularVencimientoF29(f29Data.rut, f29Data.periodo);
+          console.log('Resultado Fechas Vencimiento F29:', resultadoF29);
+          break;
+
+        case 'CONSULTAR_ESTADO_SII':
+          const siiData = JSON.parse(data);
+          const resultadoSII = await consultarEstadoSII(siiData.rut);
+          console.log('Resultado Consultar Estado SII:', resultadoSII);
+          break;
+
+        case 'VERIFICAR_AUTORIZACION_BOLETAS':
+          const boletasData = JSON.parse(data);
+          const resultadoBoletas = await verificarAutorizacionBoletas(boletasData.rut);
+          console.log('Resultado Verificar Autorización Boletas:', resultadoBoletas);
           break;
       }
     } catch (error) {

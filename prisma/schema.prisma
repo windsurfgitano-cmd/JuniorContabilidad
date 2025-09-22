@@ -34,6 +34,7 @@ model Cliente {
   tareas      Tarea[]
   obligaciones ObligacionFiscal[]
   auditorias  Auditoria[]
+  conversaciones Conversacion[]
 }
 
 model Tarea {
@@ -109,4 +110,35 @@ enum Prioridad {
 enum CanalRecordatorio {
   SISTEMA
   EMAIL
+}
+
+model Conversacion {
+  id        String   @id @default(cuid())
+  titulo    String?  // Título opcional para la conversación
+  contexto  String?  // Contexto inicial (página, cliente, etc.)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  mensajes  Mensaje[]
+  // Relación opcional con cliente si la conversación es específica
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
+  clienteId String?
+}
+
+model Mensaje {
+  id            String      @id @default(cuid())
+  contenido     String
+  rol           RolMensaje
+  timestamp     DateTime    @default(now())
+  conversacion  Conversacion @relation(fields: [conversacionId], references: [id], onDelete: Cascade)
+  conversacionId String
+  // Metadatos adicionales
+  tokens        Int?        // Número de tokens utilizados
+  modelo        String?     // Modelo de IA utilizado
+  temperatura   Float?      // Temperatura utilizada
+}
+
+enum RolMensaje {
+  USER
+  ASSISTANT
+  SYSTEM
 }

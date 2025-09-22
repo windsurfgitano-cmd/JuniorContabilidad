@@ -47,10 +47,11 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -61,10 +62,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <div className="p-6">
             <NavButtons />
             {children}
-            <footer className="mt-8 border-t pt-4 text-xs opacity-80">
-              <p>Cuando yo hola yo chao asistentes contables.</p>
-              <p>siii a todoo</p>
-            </footer>
+
           </div>
           <GlobalAISidebar />
         </PageProvider>

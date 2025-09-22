@@ -16,6 +16,7 @@ export default function GlobalAISidebar() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { currentPage, pageTitle, pageDescription, contextualHelp } = usePageContext();
 
@@ -64,6 +65,8 @@ export default function GlobalAISidebar() {
         },
         body: JSON.stringify({
           message: inputValue,
+          messages: messages, // Enviar historial completo
+          conversationId: conversationId, // ID de conversación para persistencia
           context: {
             currentPage: currentPage,
             pageTitle: pageTitle,
@@ -79,6 +82,11 @@ export default function GlobalAISidebar() {
       }
 
       const data = await response.json();
+      
+      // Actualizar conversationId si se devuelve uno nuevo
+      if (data.conversationId && !conversationId) {
+        setConversationId(data.conversationId);
+      }
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
