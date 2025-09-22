@@ -140,7 +140,7 @@ export default function AIAssistant() {
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: data.response,
+          content: data.message,
           timestamp: new Date()
         };
         setMessages(prev => [...prev, assistantMessage]);

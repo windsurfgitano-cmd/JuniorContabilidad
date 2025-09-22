@@ -83,7 +83,7 @@ export default function GlobalAISidebar() {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.response,
+        content: data.message,
         timestamp: new Date()
       };
 
