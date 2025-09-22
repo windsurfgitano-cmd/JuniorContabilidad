@@ -1,7 +1,7 @@
 'use client';
 
 import AIAssistant from '@/components/AIAssistant';
-import { Rocket, MessageCircle, Lightbulb, CheckCircle, Menu, X, ChevronDown } from 'lucide-react';
+import { Rocket, MessageCircle, Lightbulb, CheckCircle, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import useTouchOptimization from '@/hooks/useTouchOptimization';
 
@@ -153,7 +153,7 @@ export default function AsistenteIAPage() {
                       style={{ minHeight: '44px' }}
                     >
                       <span className="text-sm text-gray-700 group-hover:text-blue-700 transition-colors">
-                        "{example}"
+                        &quot;{example}&quot;
                       </span>
                     </button>
                   ))}

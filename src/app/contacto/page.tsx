@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Phone, 
   Mail, 
@@ -17,8 +17,6 @@ import {
   Star
 } from 'lucide-react';
 import useTouchOptimization from '@/hooks/useTouchOptimization';
-import MobileNavigation from '@/components/MobileNavigation';
-import PerformanceOptimizer, { OptimizedImage, ProgressiveLoading } from '@/components/PerformanceOptimizer';
 
 interface FormData {
   nombre: string;
@@ -53,7 +51,7 @@ export default function ContactoPage() {
   const formRef = useRef<HTMLFormElement>(null);
   
   // Optimizaciones táctiles
-  const { triggerHapticFeedback, handleDoubleTap, handleLongPress } = useTouchOptimization({
+  const { triggerHapticFeedback } = useTouchOptimization({
     enableHapticFeedback: true,
     preventZoom: true,
     optimizeScrolling: true
@@ -265,7 +263,7 @@ export default function ContactoPage() {
                 ))}
               </div>
               <p className="text-emerald-50 mb-4 italic">
-                "Excelente servicio y atención personalizada. Muy recomendado para empresas."
+                &quot;Excelente servicio y atención personalizada. Muy recomendado para empresas.&quot;
               </p>
               <p className="text-emerald-100 font-semibold">- María González, CEO</p>
             </div>

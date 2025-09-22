@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Calendar, Trash2, Eye, Search, Filter } from 'lucide-react';
+import { MessageCircle, Calendar, Trash2, Eye, Search } from 'lucide-react';
 
 interface Mensaje {
   id: string;
   contenido: string;
   rol: 'USER' | 'ASSISTANT' | 'SYSTEM';
   timestamp: Date;
-  metadatos?: any;
+  metadatos?: Record<string, unknown>;
 }
 
 interface Conversacion {

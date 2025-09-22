@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
+import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 
 // Hook para lazy loading de imágenes
@@ -25,7 +26,7 @@ export function useImageLazyLoading() {
     }
 
     return () => observer.disconnect();
-  }, []);
+    }, []);
 
   return { isLoaded, isInView, setIsLoaded, imgRef };
 }
@@ -52,20 +53,22 @@ export function OptimizedImage({
     <div className={`relative overflow-hidden ${className}`}>
       {/* Placeholder mientras carga */}
       {!isLoaded && (
-        <img
+        <Image
           src={placeholder}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover blur-sm"
+          fill
+          className="object-cover blur-sm"
         />
       )}
       
       {/* Imagen principal */}
       {(isInView || priority) && (
-        <img
+        <Image
           ref={imgRef}
           src={src}
           alt={alt}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
+          fill
+          className={`object-cover transition-opacity duration-300 ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           onLoad={() => setIsLoaded(true)}
@@ -89,7 +92,7 @@ export function useNetworkStatus() {
   const [connectionType, setConnectionType] = useState<string>('unknown');
 
   useEffect(() => {
-    // @ts-ignore - Navigator connection API
+    // @ts-expect-error - Navigator connection API
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     
     if (connection) {
@@ -147,8 +150,9 @@ export function ProgressiveLoading({
 }
 
 // Hook para optimización de recursos críticos
-export function useCriticalResourcePreload() {
+export function useCriticalResourcePreload(enabled: boolean = true) {
   useEffect(() => {
+    if (!enabled) return;
     // Precargar fuentes críticas
     const criticalFonts = [
       '/fonts/inter-var.woff2',
@@ -191,7 +195,7 @@ export function useCriticalResourcePreload() {
       link.href = route;
       document.head.appendChild(link);
     });
-  }, []);
+  }, [enabled]);
 }
 
 // Componente principal de optimización
@@ -209,9 +213,7 @@ export default function PerformanceOptimizer({
   const { isSlowConnection } = useNetworkStatus();
 
   // Aplicar preloading solo si está habilitado
-  if (enablePreloading) {
-    useCriticalResourcePreload();
-  }
+  useCriticalResourcePreload(enablePreloading);
 
   // Configurar estrategias según la conexión
   useEffect(() => {
