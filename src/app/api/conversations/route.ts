@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
           select: { mensajes: true }
         }
       },
-      orderBy: { fechaActualizacion: 'desc' },
+      orderBy: { updatedAt: 'desc' },
       skip,
       take: limit
     });

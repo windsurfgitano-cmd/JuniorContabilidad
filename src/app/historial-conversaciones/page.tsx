@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MessageCircle, Calendar, Trash2, Eye, Search } from 'lucide-react';
 
 interface Mensaje {
@@ -36,11 +36,7 @@ export default function HistorialConversaciones() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    loadConversaciones();
-  }, [currentPage]);
-
-  const loadConversaciones = async () => {
+  const loadConversaciones = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/conversations?page=${currentPage}&limit=10`);
@@ -55,7 +51,11 @@ export default function HistorialConversaciones() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage]);
+
+  useEffect(() => {
+    loadConversaciones();
+  }, [currentPage, loadConversaciones]);
 
   const loadConversacionDetalle = async (id: string) => {
     try {

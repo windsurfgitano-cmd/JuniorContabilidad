@@ -291,9 +291,7 @@ export async function POST(request: NextRequest) {
         const newConversation = await prisma.conversacion.create({
           data: {
             titulo: message.substring(0, 100), // Primeros 100 caracteres como título
-            contexto: JSON.stringify(context),
-            fechaCreacion: new Date(),
-            fechaActualizacion: new Date()
+            contexto: JSON.stringify(context)
           }
         });
         finalConversationId = newConversation.id;
@@ -301,7 +299,7 @@ export async function POST(request: NextRequest) {
         // Actualizar conversación existente
         await prisma.conversacion.update({
           where: { id: conversationId },
-          data: { fechaActualizacion: new Date() }
+          data: { updatedAt: new Date() }
         });
       }
 
@@ -310,9 +308,7 @@ export async function POST(request: NextRequest) {
         data: {
           contenido: message,
           rol: 'USER',
-          timestamp: new Date(),
-          conversacionId: finalConversationId,
-          metadatos: JSON.stringify({ context })
+          conversacionId: finalConversationId
         }
       });
 
@@ -321,12 +317,9 @@ export async function POST(request: NextRequest) {
         data: {
           contenido: assistantMessage,
           rol: 'ASSISTANT',
-          timestamp: new Date(),
           conversacionId: finalConversationId,
-          metadatos: JSON.stringify({ 
-            model: 'gpt-4',
-            tokens: data.usage?.total_tokens || 0
-          })
+          tokens: data.usage?.total_tokens || 0,
+          modelo: 'gpt-4'
         }
       });
 

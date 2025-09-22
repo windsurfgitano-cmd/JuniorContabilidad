@@ -202,13 +202,11 @@ export function useCriticalResourcePreload(enabled: boolean = true) {
 interface PerformanceOptimizerProps {
   children: React.ReactNode;
   enablePreloading?: boolean;
-  enableLazyLoading?: boolean;
 }
 
 export default function PerformanceOptimizer({ 
   children, 
-  enablePreloading = true,
-  enableLazyLoading = true 
+  enablePreloading = true
 }: PerformanceOptimizerProps) {
   const { isSlowConnection } = useNetworkStatus();
 

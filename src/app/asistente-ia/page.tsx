@@ -34,7 +34,7 @@ export default function AsistenteIAPage() {
     triggerHapticFeedback('light');
   };
 
-  const handleExampleClick = (example: string) => {
+  const handleExampleClick = () => {
     triggerHapticFeedback('medium');
     // Aquí se podría integrar con el AIAssistant para cargar el ejemplo
     if (isMobile) {
@@ -148,7 +148,7 @@ export default function AsistenteIAPage() {
                   ].map((example, index) => (
                     <button
                       key={index}
-                      onClick={() => handleExampleClick(example)}
+                      onClick={() => handleExampleClick()}
                       className="w-full p-3 text-left bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border border-gray-200 hover:border-blue-200 touch-manipulation group"
                       style={{ minHeight: '44px' }}
                     >

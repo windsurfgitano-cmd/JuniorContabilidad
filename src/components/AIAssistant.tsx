@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Bot, User, Send, Mic, Paperclip, MoreVertical } from 'lucide-react';
+import { Bot, User, Send, Mic, Paperclip } from 'lucide-react';
 import useTouchOptimization from '@/hooks/useTouchOptimization';
 
 interface Message {
@@ -38,8 +38,6 @@ export default function AIAssistant() {
   
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [stats, setStats] = useState<AIStats | null>(null);
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [includeContext, setIncludeContext] = useState({
     clients: true,
@@ -48,6 +46,9 @@ export default function AIAssistant() {
     capabilities: true
   });
   const [isContextMenuCollapsed, setIsContextMenuCollapsed] = useState(true);
+  const [ejemploActual, setEjemploActual] = useState(0);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const [stats, setStats] = useState<AIStats | null>(null);
 
   // Lista extensa de ejemplos para rotación
   const ejemplosConsultas = [
@@ -108,7 +109,7 @@ export default function AIAssistant() {
     "¿Qué cambios normativos debo considerar?"
   ];
 
-  const [ejemploActual, setEjemploActual] = useState(0);
+
   const [isMobile, setIsMobile] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
@@ -136,23 +137,11 @@ export default function AIAssistant() {
     return () => clearInterval(interval);
   }, [ejemplosConsultas.length]);
 
-  const [ejemploSeleccionado, setEjemploSeleccionado] = useState<string | null>(null);
 
-  // Función para cargar ejemplo al chat con animación
-  const cargarEjemplo = (ejemplo: string) => {
-    setEjemploSeleccionado(ejemplo);
-    setInputMessage(ejemplo);
-    inputRef.current?.focus();
-    
-    // Limpiar la animación después de 600ms
-    setTimeout(() => {
-      setEjemploSeleccionado(null);
-    }, 600);
-  };
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Función para detectar si el usuario está cerca del final del scroll
   const handleScroll = () => {
@@ -290,12 +279,7 @@ export default function AIAssistant() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+
 
   const formatMessage = (content: string) => {
     // Validar que content no sea undefined o null
