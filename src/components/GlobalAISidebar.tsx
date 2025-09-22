@@ -137,7 +137,7 @@ Veo que estás en: **${currentPage}**
       {/* Botón flotante para abrir sidebar */}
       <button
         onClick={toggleSidebar}
-        className={`fixed right-6 bottom-6 z-50 w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center hover:scale-110 ${
+        className={`fixed right-4 bottom-20 z-40 w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center hover:scale-110 ${
           isOpen ? 'rotate-45 pointer-events-none opacity-0' : 'scale-100 opacity-100'
         }`}
         aria-label="Abrir asistente ContadorIA"
@@ -286,7 +286,7 @@ Veo que estás en: **${currentPage}**
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder={`Pregunta sobre ${pageTitle.toLowerCase()}...`}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-3 pr-12 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   disabled={isLoading}
                 />
                 <button

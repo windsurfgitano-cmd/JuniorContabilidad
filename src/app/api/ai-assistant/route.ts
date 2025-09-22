@@ -243,96 +243,144 @@ export async function POST(request: NextRequest) {
       content: message
     });
 
-    // Llamada a Azure OpenAI
-    const response = await fetch(AZURE_OPENAI_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': AZURE_OPENAI_API_KEY,
-      },
-      body: JSON.stringify({
-        messages: conversationMessages,
-        max_tokens: 2000,
-        temperature: 0.7,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-      }),
-    });
+    // Verificar si se solicita streaming
+    const isStreaming = request.headers.get('accept') === 'text/stream';
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error de Azure OpenAI:', response.status, errorText);
-      throw new Error(`Error de Azure OpenAI: ${response.status} - ${errorText}`);
-    }
+    if (isStreaming) {
+      // Implementar streaming para experiencia premium
+      const response = await fetch(AZURE_OPENAI_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': AZURE_OPENAI_API_KEY,
+        },
+        body: JSON.stringify({
+          messages: conversationMessages,
+          max_tokens: 2000,
+          temperature: 0.7,
+          top_p: 0.95,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+          stream: true,
+        }),
+      });
 
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Respuesta inesperada de Azure OpenAI:', data);
-      throw new Error('Respuesta inválida de Azure OpenAI');
-    }
-
-    const assistantMessage = data.choices[0].message.content;
-
-    // Procesar comandos especiales si los hay
-    try {
-      await processAICommands(assistantMessage);
-    } catch (commandError) {
-      console.error('Error procesando comandos IA:', commandError);
-      // No fallar la respuesta por errores de comandos, solo logear
-    }
-
-    // Guardar conversación en la base de datos
-    let finalConversationId = conversationId;
-    try {
-      if (!conversationId) {
-        // Crear nueva conversación
-        const newConversation = await prisma.conversacion.create({
-          data: {
-            titulo: message.substring(0, 100), // Primeros 100 caracteres como título
-            contexto: JSON.stringify(context)
-          }
-        });
-        finalConversationId = newConversation.id;
-      } else {
-        // Actualizar conversación existente
-        await prisma.conversacion.update({
-          where: { id: conversationId },
-          data: { updatedAt: new Date() }
-        });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error de Azure OpenAI:', response.status, errorText);
+        throw new Error(`Error de Azure OpenAI: ${response.status} - ${errorText}`);
       }
 
-      // Guardar mensaje del usuario
-      await prisma.mensaje.create({
-        data: {
-          contenido: message,
-          rol: 'USER',
-          conversacionId: finalConversationId
-        }
+      // Crear un ReadableStream para streaming
+      const stream = new ReadableStream({
+        async start(controller) {
+          const reader = response.body?.getReader();
+          const decoder = new TextDecoder();
+          let fullMessage = '';
+
+          try {
+            while (true) {
+              const { done, value } = await reader!.read();
+              if (done) break;
+
+              const chunk = decoder.decode(value);
+              const lines = chunk.split('\n');
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const data = line.slice(6);
+                  if (data === '[DONE]') {
+                    // Procesar comandos especiales al final
+                    try {
+                      await processAICommands(fullMessage);
+                    } catch (commandError) {
+                      console.error('Error procesando comandos IA:', commandError);
+                    }
+
+                    // Guardar conversación completa
+                    await saveConversation(conversationId, message, fullMessage, context);
+                    
+                    controller.close();
+                    return;
+                  }
+
+                  try {
+                    const parsed = JSON.parse(data);
+                    if (parsed.choices?.[0]?.delta?.content) {
+                      const content = parsed.choices[0].delta.content;
+                      fullMessage += content;
+                      controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ content })}\n\n`));
+                    }
+                  } catch (e) {
+                    // Ignorar errores de parsing de chunks individuales
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error en streaming:', error);
+            controller.error(error);
+          }
+        },
       });
 
-      // Guardar respuesta del asistente
-      await prisma.mensaje.create({
-        data: {
-          contenido: assistantMessage,
-          rol: 'ASSISTANT',
-          conversacionId: finalConversationId,
-          tokens: data.usage?.total_tokens || 0,
-          modelo: 'gpt-4'
-        }
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+    } else {
+      // Respuesta tradicional (no streaming)
+      const response = await fetch(AZURE_OPENAI_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': AZURE_OPENAI_API_KEY,
+        },
+        body: JSON.stringify({
+          messages: conversationMessages,
+          max_tokens: 2000,
+          temperature: 0.7,
+          top_p: 0.95,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+        }),
       });
 
-    } catch (dbError) {
-      console.error('Error guardando conversación:', dbError);
-      // No fallar la respuesta por errores de BD, solo logear
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error de Azure OpenAI:', response.status, errorText);
+        throw new Error(`Error de Azure OpenAI: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        console.error('Respuesta inesperada de Azure OpenAI:', data);
+        throw new Error('Respuesta inválida de Azure OpenAI');
+      }
+
+      const assistantMessage = data.choices[0].message.content;
+
+      // Procesar comandos especiales si los hay
+      try {
+        await processAICommands(assistantMessage);
+      } catch (commandError) {
+        console.error('Error procesando comandos IA:', commandError);
+        // No fallar la respuesta por errores de comandos, solo logear
+      }
+
+      // Guardar conversación usando la función centralizada
+      const finalConversationId = await saveConversation(conversationId, message, assistantMessage, context);
+
+      return NextResponse.json({
+        success: true,
+        message: assistantMessage,
+        conversationId: finalConversationId
+      });
     }
-
-    return NextResponse.json({
-      success: true,
-      message: assistantMessage,
-      conversationId: finalConversationId
-    });
 
   } catch (error) {
     console.error('Error en AI Assistant:', error);
@@ -358,6 +406,56 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
+  }
+}
+
+// Función para guardar conversación
+async function saveConversation(conversationId: string | null, userMessage: string, assistantMessage: string, context: any) {
+  let finalConversationId = conversationId;
+  try {
+    if (!conversationId) {
+      // Crear nueva conversación
+      const newConversation = await prisma.conversacion.create({
+        data: {
+          titulo: userMessage.substring(0, 100), // Primeros 100 caracteres como título
+          contexto: JSON.stringify(context)
+        }
+      });
+      finalConversationId = newConversation.id;
+    } else {
+      // Actualizar conversación existente
+      await prisma.conversacion.update({
+        where: { id: conversationId },
+        data: {
+          contexto: JSON.stringify(context)
+        }
+      });
+    }
+
+    // Guardar mensaje del usuario
+    await prisma.mensaje.create({
+      data: {
+        conversacionId: finalConversationId!,
+        rol: 'user',
+        contenido: userMessage,
+        timestamp: new Date()
+      }
+    });
+
+    // Guardar mensaje del asistente
+    await prisma.mensaje.create({
+      data: {
+        conversacionId: finalConversationId!,
+        rol: 'assistant',
+        contenido: assistantMessage,
+        timestamp: new Date()
+      }
+    });
+
+    return finalConversationId;
+  } catch (error) {
+    console.error('Error guardando conversación:', error);
+    return finalConversationId;
   }
 }
 

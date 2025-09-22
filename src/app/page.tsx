@@ -36,7 +36,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen p-6 sm:p-10">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">TuContable — Agenda para Contadores y Auditores</h1>
+        <h1 className="text-2xl font-semibold">Agenda para Contadores y Auditores</h1>
         <nav className="flex gap-3 text-sm">
           <Link href="/clientes" className="underline">Clientes</Link>
           <Link href="/tareas" className="underline">Tareas</Link>
