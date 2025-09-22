@@ -436,7 +436,7 @@ async function saveConversation(conversationId: string | null, userMessage: stri
     await prisma.mensaje.create({
       data: {
         conversacionId: finalConversationId!,
-        rol: 'user',
+        rol: 'USER',
         contenido: userMessage,
         timestamp: new Date()
       }
@@ -446,7 +446,7 @@ async function saveConversation(conversationId: string | null, userMessage: stri
     await prisma.mensaje.create({
       data: {
         conversacionId: finalConversationId!,
-        rol: 'assistant',
+        rol: 'ASSISTANT',
         contenido: assistantMessage,
         timestamp: new Date()
       }
