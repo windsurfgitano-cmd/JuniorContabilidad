@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bot, User, Send, Mic, Paperclip } from 'lucide-react';
 import useTouchOptimization from '@/hooks/useTouchOptimization';
 
@@ -111,7 +111,6 @@ export default function AIAssistant() {
 
 
   const [isMobile, setIsMobile] = useState(false);
-  const [isInputFocused, setIsInputFocused] = useState(false);
 
   // Touch optimization
   const { triggerHapticFeedback } = useTouchOptimization({
@@ -141,7 +140,7 @@ export default function AIAssistant() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Función para detectar si el usuario está cerca del final del scroll
   const handleScroll = () => {
@@ -187,12 +186,12 @@ export default function AIAssistant() {
   // Manejar hidratación y actualizar timestamp del mensaje inicial
   useEffect(() => {
     setIsHydrated(true);
-    // Actualizar el timestamp del mensaje inicial con la hora actual
-    setMessages(prevMessages => 
-      prevMessages.map(msg => 
-        msg.id === '1' ? { ...msg, timestamp: new Date() } : msg
-      )
-    );
+    // Comentado para evitar re-renders que afecten el input
+    // setMessages(prevMessages => 
+    //   prevMessages.map(msg => 
+    //     msg.id === '1' ? { ...msg, timestamp: new Date() } : msg
+    //   )
+    // );
   }, []);
 
   const loadStats = async () => {
@@ -207,7 +206,8 @@ export default function AIAssistant() {
     }
   };
 
-  const sendMessage = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage: Message = {
@@ -220,10 +220,6 @@ export default function AIAssistant() {
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
-    setShouldAutoScroll(true); // Activar auto-scroll cuando se envía un mensaje
-
-    // Scroll inmediato al enviar mensaje del usuario
-    scrollToBottomImmediate();
 
     try {
       const response = await fetch('/api/ai-assistant', {
@@ -233,8 +229,8 @@ export default function AIAssistant() {
         },
         body: JSON.stringify({
           message: inputMessage,
-          messages: messages, // Enviar historial completo
-          conversationId: conversationId, // ID de conversación para persistencia
+          messages: messages,
+          conversationId: conversationId,
           context: {
             includeClients: includeContext.clients,
             includeObligaciones: includeContext.obligations,
@@ -244,40 +240,39 @@ export default function AIAssistant() {
         }),
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        // Actualizar conversationId si se devuelve uno nuevo
-        if (data.conversationId && !conversationId) {
-          setConversationId(data.conversationId);
-        }
-        
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: data.message,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        
-        // Recargar estadísticas después de cada respuesta
-        loadStats();
-      } else {
-        throw new Error(data.error || 'Error en la respuesta del asistente');
+      if (!response.ok) {
+        throw new Error('Error en la respuesta del servidor');
       }
+
+      const data = await response.json();
+      
+      if (data.conversationId && !conversationId) {
+        setConversationId(data.conversationId);
+      }
+      
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.message,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
+      console.error('Error:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `Lo siento, ocurrió un error: ${error instanceof Error ? error.message : 'Error desconocido'}. Por favor, intenta nuevamente.`,
+        content: 'Lo siento, hubo un error al procesar tu consulta. Por favor, intenta nuevamente.',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
-      inputRef.current?.focus();
     }
   };
+
+
 
 
 
@@ -298,23 +293,21 @@ export default function AIAssistant() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden">
-
-
-
-
-      {/* Messages area - Optimized for readability */}
+    <div className="flex flex-col h-full bg-white">
+      {/* Messages area - Fixed height to prevent overlap */}
       <div 
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        className={`flex-1 overflow-y-auto bg-slate-50 ${
+        className={`overflow-y-auto bg-slate-50 ${
           isMobile ? 'p-3 space-y-3' : 'p-4 space-y-4'
         }`}
         style={{
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          height: '0',
-          minHeight: '0'
+          height: 'calc(100vh - 140px)',
+          maxHeight: 'calc(100vh - 140px)',
+          minHeight: '200px',
+          paddingBottom: '20px'
         }}
       >
         {messages.filter(message => message && message.content && typeof message.content === 'string').map((message, index) => (
@@ -395,210 +388,66 @@ export default function AIAssistant() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Área de entrada - Fija en la parte inferior */}
-      <div className={`flex-shrink-0 border-t border-slate-200 bg-slate-50 shadow-sm ${isMobile ? 'p-4' : 'p-8'}`}>
-        {/* Menú de contexto colapsable - Compacto */}
-        {!isContextMenuCollapsed && (
-          <div className={`mb-3 bg-white rounded-lg border border-slate-300 shadow-sm ${isMobile ? 'mb-2' : ''}`}>
-            <div className={`p-3 ${isMobile ? 'p-2' : ''}`}>
-              <div className={`grid grid-cols-2 gap-2 ${isMobile ? 'gap-2' : 'gap-3'}`}>
-                <label className={`flex items-center space-x-2 cursor-pointer touch-manipulation p-2 rounded hover:bg-slate-50 transition-colors ${isMobile ? 'text-sm p-1.5' : 'text-sm'}`}>
-                  <input
-                    type="checkbox"
-                    checked={includeContext.clients}
-                    onChange={(e) => {
-                      triggerHapticFeedback();
-                      setIncludeContext(prev => ({ ...prev, clients: e.target.checked }));
-                    }}
-                    className={`rounded border-slate-400 text-emerald-600 focus:ring-emerald-500 focus:ring-2 ${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`}
-                  />
-                  <span className="text-slate-800 font-medium">Clientes</span>
-                </label>
-                <label className={`flex items-center space-x-2 cursor-pointer touch-manipulation p-2 rounded hover:bg-slate-50 transition-colors ${isMobile ? 'text-sm p-1.5' : 'text-sm'}`}>
-                  <input
-                    type="checkbox"
-                    checked={includeContext.obligations}
-                    onChange={(e) => {
-                      triggerHapticFeedback();
-                      setIncludeContext(prev => ({ ...prev, obligations: e.target.checked }));
-                    }}
-                    className={`rounded border-slate-400 text-emerald-600 focus:ring-emerald-500 focus:ring-2 ${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`}
-                  />
-                  <span className="text-slate-800 font-medium">Obligaciones</span>
-                </label>
-                <label className={`flex items-center space-x-2 cursor-pointer touch-manipulation p-2 rounded hover:bg-slate-50 transition-colors ${isMobile ? 'text-sm p-1.5' : 'text-sm'}`}>
-                  <input
-                    type="checkbox"
-                    checked={includeContext.tasks}
-                    onChange={(e) => {
-                      triggerHapticFeedback();
-                      setIncludeContext(prev => ({ ...prev, tasks: e.target.checked }));
-                    }}
-                    className={`rounded border-slate-400 text-emerald-600 focus:ring-emerald-500 focus:ring-2 ${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`}
-                  />
-                  <span className="text-slate-800 font-medium">Tareas</span>
-                </label>
-                <label className={`flex items-center space-x-2 cursor-pointer touch-manipulation p-2 rounded hover:bg-slate-50 transition-colors ${isMobile ? 'text-sm p-1.5' : 'text-sm'}`}>
-                  <input
-                    type="checkbox"
-                    checked={includeContext.capabilities}
-                    onChange={(e) => {
-                      triggerHapticFeedback();
-                      setIncludeContext(prev => ({ ...prev, capabilities: e.target.checked }));
-                    }}
-                    className={`rounded border-slate-400 text-emerald-600 focus:ring-emerald-500 focus:ring-2 ${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`}
-                  />
-                  <span className="text-slate-800 font-medium">Capacidades</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Input area - Mobile optimized */}
-        <div className="flex items-end space-x-2 md:space-x-4">
-          <div className="flex-1 relative">
-            <textarea
-              ref={inputRef}
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-              onFocus={() => {
-                setIsInputFocused(true);
-                triggerHapticFeedback('light');
-              }}
-              onBlur={() => setIsInputFocused(false)}
-              placeholder={isMobile ? "Pregúntame algo..." : "¿En qué puedo ayudarte hoy?"}
-              className={`
-                w-full border border-slate-300 rounded-xl px-4 py-3 md:px-6 md:py-4 
-                focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 
-                text-base bg-white text-slate-800 placeholder-slate-400 shadow-sm
-                transition-all duration-200 touch-manipulation resize-none
-                ${isInputFocused ? 'shadow-lg' : ''}
-                ${isMobile ? 'text-16px pr-36' : ''}
-              `}
-              style={{ 
-                fontSize: isMobile ? '16px' : '14px', // Prevenir zoom en iOS
-                minHeight: '44px', // Tamaño mínimo táctil
-                maxHeight: isMobile ? '120px' : '150px'
-              }}
-              rows={isMobile ? 2 : 3}
-              disabled={isLoading}
-            />
-            
-            {/* Botones adicionales para móvil */}
-            {isMobile && (
-              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
-                {/* Botón de contexto */}
-                <button
-                  onClick={() => {
-                    setIsContextMenuCollapsed(!isContextMenuCollapsed);
-                    triggerHapticFeedback();
-                  }}
-                  className={`p-2 transition-colors touch-manipulation rounded-lg ${
-                    Object.values(includeContext).some(v => v) 
-                      ? 'text-emerald-600 bg-emerald-50' 
-                      : 'text-slate-400 hover:text-slate-600'
-                  }`}
-                  style={{ minHeight: '44px', minWidth: '44px' }}
-                  title="Contexto"
-                >
-                  <div className="relative">
-                    <div className="w-4 h-4 border-2 border-current rounded opacity-70"></div>
-                    <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full text-xs ${
-                      Object.values(includeContext).some(v => v) ? 'bg-emerald-500' : 'bg-slate-400'
-                    }`}></div>
-                  </div>
-                </button>
-                <button
-                  className="p-2 text-slate-400 hover:text-slate-600 transition-colors touch-manipulation"
-                  style={{ minHeight: '44px', minWidth: '44px' }}
-                  title="Adjuntar archivo"
-                >
-                  <Paperclip size={18} />
-                </button>
-                <button
-                  className="p-2 text-slate-400 hover:text-slate-600 transition-colors touch-manipulation"
-                  style={{ minHeight: '44px', minWidth: '44px' }}
-                  title="Mensaje de voz"
-                >
-                  <Mic size={18} />
-                </button>
-              </div>
-            )}
-          </div>
-          
-          {/* Botones para desktop */}
-          {!isMobile && (
-            <div className="flex space-x-2">
-              <button
-                onClick={() => {
-                  setIsContextMenuCollapsed(!isContextMenuCollapsed);
-                  triggerHapticFeedback();
+      {/* Input area - Fixed at bottom with improved design */}
+      <div 
+        className="border-t bg-white shadow-lg" 
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          backgroundColor: 'white',
+          borderTop: '1px solid #e5e7eb',
+          boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1)'
+        }}
+      >
+        <div className="max-w-full mx-auto px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-4">
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <div className="relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder="¿En qué puedo ayudarte hoy?"
+                className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 pr-14 text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none"
+                style={{
+                  color: '#000000',
+                  backgroundColor: '#ffffff',
+                  fontSize: '16px',
+                  lineHeight: '1.5',
+                  minHeight: '48px'
                 }}
-                className={`p-3 transition-colors rounded-xl border ${
-                  Object.values(includeContext).some(v => v) 
-                    ? 'text-emerald-600 bg-emerald-50 border-emerald-200' 
-                    : 'text-slate-400 hover:text-slate-600 border-slate-300 hover:bg-slate-50'
-                }`}
-                title="Contexto"
-              >
-                <div className="relative">
-                  <div className="w-5 h-5 border-2 border-current rounded opacity-70"></div>
-                  <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${
-                    Object.values(includeContext).some(v => v) ? 'bg-emerald-500' : 'bg-slate-400'
-                  }`}></div>
-                </div>
-              </button>
+                disabled={isLoading}
+              />
               <button
-                className="p-3 text-slate-400 hover:text-slate-600 transition-colors border border-slate-300 rounded-xl hover:bg-slate-50"
-                title="Adjuntar archivo"
+                type="submit"
+                disabled={isLoading || !inputMessage.trim()}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2.5 rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md"
+                style={{
+                  minWidth: '44px',
+                  minHeight: '44px'
+                }}
               >
-                <Paperclip size={20} />
-              </button>
-              <button
-                className="p-3 text-slate-400 hover:text-slate-600 transition-colors border border-slate-300 rounded-xl hover:bg-slate-50"
-                title="Mensaje de voz"
-              >
-                <Mic size={20} />
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
               </button>
             </div>
-          )}
+          </form>
           
-          <button
-            onClick={() => {
-              sendMessage();
-              triggerHapticFeedback('medium');
+          <div 
+            className="text-xs mt-2 text-center font-medium"
+            style={{
+              color: '#000000',
+              opacity: 0.7
             }}
-            disabled={isLoading || !inputMessage.trim()}
-            className={`
-              bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl 
-              hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-50 
-              disabled:cursor-not-allowed transition-all duration-200 font-semibold 
-              shadow-md border border-emerald-500 touch-manipulation
-              ${isMobile ? 'p-3' : 'px-8 py-4'}
-            `}
-            style={{ minHeight: '44px', minWidth: '44px' }}
           >
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>
-            ) : isMobile ? (
-              <Send size={20} />
-            ) : (
-              "Enviar"
-            )}
-          </button>
-        </div>
-        
-
-
-        <div className="text-xs text-slate-600 mt-3 text-center font-medium">
-          Presiona Enter para enviar • Shift+Enter para nueva línea • 📚 Capacidades Completas activadas por defecto
+            Presiona Enter para enviar • Shift+Enter para nueva línea • 📚 Capacidades Completas activadas
+          </div>
         </div>
       </div>
     </div>
